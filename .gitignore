@@ -1,0 +1,9 @@
+Makefile
+build
+*.o
+*.user*
+.directory
+*.orig
+qrc_*.cpp
+*.deb
+*.stash
