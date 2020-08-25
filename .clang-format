@@ -1,0 +1,16 @@
+UseTab: Never
+IndentWidth: 4
+BreakBeforeBraces: Linux
+AllowShortIfStatementsOnASingleLine: false
+IndentCaseLabels: false
+ColumnLimit: 0 
+AccessModifierOffset: -4
+PointerAlignment: Right
+SpaceAfterTemplateKeyword: false
+SpaceBeforeInheritanceColon: false
+SpaceBeforeParens: false
+SortIncludes: false
+BreakConstructorInitializers: AfterColon
+Standard: Auto
+SpaceBeforeCtorInitializerColon: false
+SpaceBeforeRangeBasedForLoopColon: false

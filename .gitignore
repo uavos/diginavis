@@ -1,5 +1,6 @@
 Makefile
 build
+builddir
 *.o
 *.user*
 .directory
@@ -7,3 +8,5 @@ build
 qrc_*.cpp
 *.deb
 *.stash
+*.pb.*
+settings.json

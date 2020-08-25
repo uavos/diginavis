@@ -1,10 +1,12 @@
 #include "diginavisplugin.h"
 
+#include "diginavis.h"
+
 DiginavisPlugin::DiginavisPlugin()
 {
 }
 
 QObject *DiginavisPlugin::createControl()
 {
-    return nullptr;
+    return new Diginavis();
 }

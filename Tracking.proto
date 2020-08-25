@@ -1,0 +1,28 @@
+syntax = "proto3";
+option java_multiple_files = true;
+option java_outer_classname = "TackingProto";
+package avtm.center.proto;
+
+service TrackingService {
+  rpc receive(stream TrackingRequest) returns (Empty);
+}
+
+message TrackingRequest {
+    Point point = 1;
+    int32 speed = 2;
+    string mission_uuid = 3;
+    Timestamp time = 4;
+}
+
+message Point {
+  double latitude = 1;
+  double longitude = 2;
+  double altitude = 3;
+}
+
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}
+
+message Empty {}

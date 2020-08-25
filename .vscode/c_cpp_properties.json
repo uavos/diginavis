@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "~/apx_sdk/include/**",
-                "~/Qt/5.14.0/gcc_64/include/**"
+                "~/Qt/5.14.0/gcc_64/include/**",
+                "/home/pavel/grpc_install/include/"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",
