@@ -24,7 +24,8 @@ apx_dep = [cpp.find_library('ApxCore', dirs: join_paths(apx_sdk, 'lib')),
 qt5 = import('qt5')
 moc_files = qt5.preprocess(moc_headers: ['asyncclient.h',
                                          'diginavisplugin.h',
-                                         'diginavis.h'],
+                                         'diginavis.h',
+                                         'flightplan.h'],
                            include_directories: apx_inc,
                            dependencies: qt5_dep)
 
@@ -60,6 +61,7 @@ shared_library('diginavis',
                'asyncclient.cpp',
                'diginavisplugin.cpp',
                'diginavis.cpp',
+               'flightplan.cpp',
                 protogrpc_src,
                 proto_src,
                 moc_files,

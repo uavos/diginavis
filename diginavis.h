@@ -3,17 +3,20 @@
 
 #include "Fact/Fact.h"
 #include "asyncclient.h"
+#include "flightplan.h"
 
 class Diginavis: public Fact
 {
     Q_OBJECT
 public:
     Diginavis(Fact *parent = nullptr);
+    virtual ~Diginavis();
 
     Fact *f_isConnected;
+    Flightplan *f_flightplan;
 
 private:
-    AsyncClient m_client;
+    std::shared_ptr<AsyncClient> m_client;
 
 private slots:
     void onIsConnectedChanged();
