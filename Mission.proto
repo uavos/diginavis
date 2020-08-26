@@ -38,7 +38,6 @@ message MissionUpdateStatusAndCoordinatesRequest {
 
 enum MissionStatus {
   CREATED = 0;
-  TAKE_OFF = 1;
-  IN_MOVE = 2;
-  LAND_ON = 3;
+  IN_MOVE = 1;
+  LANDED = 2;
 }

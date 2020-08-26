@@ -25,7 +25,8 @@ qt5 = import('qt5')
 moc_files = qt5.preprocess(moc_headers: ['asyncclient.h',
                                          'diginavisplugin.h',
                                          'diginavis.h',
-                                         'flightplan.h'],
+                                         'flightplan.h',
+                                         'readonlyfact.h'],
                            include_directories: apx_inc,
                            dependencies: qt5_dep)
 
@@ -62,6 +63,7 @@ shared_library('diginavis',
                'diginavisplugin.cpp',
                'diginavis.cpp',
                'flightplan.cpp',
+               'readonlyfact.cpp',
                 protogrpc_src,
                 proto_src,
                 moc_files,
