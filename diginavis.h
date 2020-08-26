@@ -14,8 +14,9 @@ public:
     Diginavis(Fact *parent = nullptr);
     virtual ~Diginavis();
 
-    Fact *f_isConnected;
+    ReadOnlyFact *f_isConnected;
     ReadOnlyFact *f_status;
+    ReadOnlyFact *f_lastSync;
     Flightplan *f_flightplan;
 
 private:
@@ -26,6 +27,7 @@ private slots:
     void onIsConnectedChanged();
     void onStatusChanged();
     void onCurrentVehicleChanged();
+    void onTrackerSynced();
 };
 
 #endif // !DIGINAVIS_H

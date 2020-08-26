@@ -17,18 +17,23 @@ Diginavis::Diginavis(Fact *parent):
     f_flightplan = new Flightplan(m_client, this);
 
     f_status = new ReadOnlyFact(this, "status", "Status", "", Fact::Text);
-    f_status->setIcon("state-machine");
+    f_status->setIcon("format-list-bulleted");
     f_status->setValue("None");
 
-    f_isConnected = new Fact(this, "isConnected", "No connection", "", Fact::NoFlags);
-    f_isConnected->setActive(false);
+    f_isConnected = new ReadOnlyFact(this, "isConnected", "Connection", "", Fact::Text);
     f_isConnected->setIcon("alert-circle-outline");
+    f_isConnected->setValueForce("No");
+
+    f_lastSync = new ReadOnlyFact(this, "last_sync", "Last sync", "", Fact::Text);
+    f_lastSync->setIcon("sync");
+    f_lastSync->setValueForce("N/A");
 
     m_client->setDeviceUuid("0f98f251-7bc5-4dcf-a8d1-836952304fc5");
     m_client->setMissionRequestUuid("393eea45-0094-49a9-b1ff-72ba560cd397");
 
     connect(m_client.get(), &AsyncClient::isConnectedChanged, this, &Diginavis::onIsConnectedChanged);
     connect(m_client.get(), &AsyncClient::statusChanged, this, &Diginavis::onStatusChanged);
+    connect(m_client.get(), &AsyncClient::trackerSynced, this, &Diginavis::onTrackerSynced);
 
     m_client->start();
 
@@ -45,10 +50,10 @@ Diginavis::~Diginavis()
 void Diginavis::onIsConnectedChanged()
 {
     if(m_client->isConnected()) {
-        f_isConnected->setTitle("Connected to " + m_client->getHost());
+        f_isConnected->setValueForce("Yes");
         f_isConnected->setIcon("check");
     } else {
-        f_isConnected->setTitle("No connection");
+        f_isConnected->setValueForce("No");
         f_isConnected->setIcon("alert-circle-outline");
     }
 }
@@ -73,4 +78,10 @@ void Diginavis::onCurrentVehicleChanged()
     disconnect(m_vehicle->f_mission->f_upload, &Fact::triggered, m_client.get(), &AsyncClient::updateMission);
     m_vehicle = Vehicles::instance()->current();
     connect(m_vehicle->f_mission->f_upload, &Fact::triggered, m_client.get(), &AsyncClient::updateMission);
+}
+
+void Diginavis::onTrackerSynced()
+{
+    QString str = QTime::currentTime().toString("hh-mm-ss:zzz");
+    f_lastSync->setValueForce(str);
 }

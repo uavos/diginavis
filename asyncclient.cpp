@@ -12,7 +12,7 @@ Tracker::Tracker(std::shared_ptr<grpc::Channel> channel):
 {
 }
 
-void Tracker::write(float altitude, float latitude, float longitude, float gspeed, uint ts)
+bool Tracker::write(float altitude, float latitude, float longitude, float gspeed, uint ts)
 {
     auto msecs = std::chrono::milliseconds(ts);
     auto secs = std::chrono::duration_cast<std::chrono::seconds>(msecs);
@@ -29,8 +29,12 @@ void Tracker::write(float altitude, float latitude, float longitude, float gspee
     request.mutable_time()->set_nanos(nsecs.count());
     request.set_mission_uuid(m_missionUuid.toStdString());
 
-    if(!m_writer->Write(request))
+    if(m_writer->Write(request)) {
+        return true;
+    } else {
         std::cerr << "Can't write track" << std::endl;
+        return false;
+    }
 }
 
 void Tracker::setMissionUuid(const QString &uuid)
@@ -114,9 +118,6 @@ bool Registrator::updateStatus(const QString &missionUuid, MissionStatus status)
     Empty response;
     request.set_missionuuid(missionUuid.toStdString());
     request.set_status(status);
-
-    std::cout << "UPDATE: " << missionUuid.toStdString() << std::endl
-              << request.DebugString() << std::endl;
 
     auto result = m_stub->update(&clientContext, request, &response);
     if(!result.ok()) {
@@ -254,15 +255,17 @@ void AsyncClient::run()
                         }
                     }
 
-                    if(getStatus() == Registered && syncPoint.elapsed() > SYNC_INTERVAL) {
+                    if(getStatus() != None && syncPoint.elapsed() > SYNC_INTERVAL) {
                         auto mandala = Vehicles::instance()->current()->f_mandala;
                         float altitude = mandala->valueByName("gps_hmsl").toFloat();
                         float latitude = mandala->valueByName("gps_lat").toFloat();
                         float longitude = mandala->valueByName("gps_lon").toFloat();
                         float gspeed = mandala->valueByName("gSpeed").toFloat();
                         uint ts = mandala->valueByName("dl_timestamp").toUInt();
-                        tracker->write(altitude, latitude, longitude, gspeed, ts);
-                        syncPoint.start();
+                        if(tracker->write(altitude, latitude, longitude, gspeed, ts)) {
+                            emit trackerSynced();
+                            syncPoint.start();
+                        }
 
                         altitudeBuffer.push_back(altitude);
                         if(altitudeBuffer.size() > 5)

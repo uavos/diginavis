@@ -15,7 +15,7 @@ class Tracker
 {
 public:
     Tracker(std::shared_ptr<grpc::Channel> channel);
-    void write(float altitude, float latitude, float longitude, float gspeed, uint ts);
+    bool write(float altitude, float latitude, float longitude, float gspeed, uint ts);
     void setMissionUuid(const QString &uuid);
     ~Tracker();
 
@@ -97,6 +97,7 @@ signals:
     void isConnectedChanged();
     void flightplanUuidChanged();
     void statusChanged();
+    void trackerSynced();
 };
 
 #endif // !ASYNCCLIENT_H
