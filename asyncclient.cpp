@@ -257,12 +257,13 @@ void AsyncClient::run()
 
                     if(getStatus() != None && syncPoint.elapsed() > SYNC_INTERVAL) {
                         auto mandala = Vehicles::instance()->current()->f_mandala;
-                        float altitude = mandala->valueByName("gps_hmsl").toFloat();
+                        float altitude = mandala->valueByName("altitude").toFloat();
+                        float gpsaltitude = mandala->valueByName("gps_hmsl").toFloat();
                         float latitude = mandala->valueByName("gps_lat").toFloat();
                         float longitude = mandala->valueByName("gps_lon").toFloat();
                         float gspeed = mandala->valueByName("gSpeed").toFloat();
                         uint ts = mandala->valueByName("dl_timestamp").toUInt();
-                        if(tracker->write(altitude, latitude, longitude, gspeed, ts)) {
+                        if(tracker->write(gpsaltitude, latitude, longitude, gspeed, ts)) {
                             emit trackerSynced();
                             syncPoint.start();
                         }
@@ -284,9 +285,6 @@ void AsyncClient::run()
                         } else if(getStatus() == InMove && less) {
                             if(registrator->updateStatus(getMissionUuid(), LANDED))
                                 setStatus(Landed);
-                        } else if(getStatus() == Landed && greater) {
-                            if(registrator->updateStatus(getMissionUuid(), IN_MOVE))
-                                setStatus(InMove);
                         }
                     }
 
