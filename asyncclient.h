@@ -15,7 +15,7 @@ class Tracker
 {
 public:
     Tracker(std::shared_ptr<grpc::Channel> channel);
-    bool write(float altitude, float latitude, float longitude, float gspeed, uint ts);
+    bool write(float altitude, float latitude, float longitude, float gspeed, uint64_t ts);
     void setMissionUuid(const QString &uuid);
     ~Tracker();
 

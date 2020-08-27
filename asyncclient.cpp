@@ -13,7 +13,7 @@ Tracker::Tracker(std::shared_ptr<grpc::Channel> channel):
 {
 }
 
-bool Tracker::write(float altitude, float latitude, float longitude, float gspeed, uint ts)
+bool Tracker::write(float altitude, float latitude, float longitude, float gspeed, uint64_t ts)
 {
     auto msecs = std::chrono::milliseconds(ts);
     auto secs = std::chrono::duration_cast<std::chrono::seconds>(msecs);
@@ -239,7 +239,7 @@ void AsyncClient::run()
             if(channel->WaitForConnected(deadline)) {
                 setIsConnected(true);
                 auto tracker = std::make_unique<Tracker>(channel);
-                tracker->setMissionUuid(m_missionRequestUuid);
+                tracker->setMissionUuid(getMissionUuid());
                 auto registrator = std::make_unique<Registrator>(channel, getDeviceUuid(), getMissionRequestUuid());
 
                 while(!m_stop) {
@@ -249,7 +249,7 @@ void AsyncClient::run()
                             auto result = registrator->registerMission();
                             if(result) {
                                 setMissionUuid(result.value());
-                                tracker->setMissionUuid(m_missionRequestUuid);
+                                tracker->setMissionUuid(getMissionUuid());
                                 setStatus(Registered);
                             }
                         } else if(task.value() == UpdateMission && !getMissionUuid().isEmpty()) {
@@ -264,7 +264,7 @@ void AsyncClient::run()
                         float latitude = mandala->valueByName("gps_lat").toFloat();
                         float longitude = mandala->valueByName("gps_lon").toFloat();
                         float gspeed = mandala->valueByName("gSpeed").toFloat();
-                        uint ts = mandala->valueByName("dl_timestamp").toUInt();
+                        uint64_t ts = QDateTime::currentDateTime().toMSecsSinceEpoch();
                         if(tracker->write(gpsaltitude, latitude, longitude, gspeed, ts)) {
                             emit trackerSynced();
                         }
