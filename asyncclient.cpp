@@ -228,15 +228,20 @@ void AsyncClient::run()
     m_stop = false;
     setIsConnected(false);
     setStatus(None);
+    std::vector<float> altitudeBuffer;
     while(!m_stop) {
-        auto channel = grpc::CreateChannel(m_host.toStdString(), grpc::InsecureChannelCredentials());
+        grpc::ChannelArguments args;
+        args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, 5000);
+        args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 5000);
+        auto channel = grpc::CreateCustomChannel(m_host.toStdString(), grpc::InsecureChannelCredentials(), args);
         if(channel) {
-            std::vector<float> altitudeBuffer;
             QElapsedTimer syncPoint;
+            syncPoint.start();
             auto deadline = gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_seconds(2, GPR_TIMESPAN));
             if(channel->WaitForConnected(deadline)) {
                 setIsConnected(true);
                 auto tracker = std::make_unique<Tracker>(channel);
+                tracker->setMissionUuid(m_missionRequestUuid);
                 auto registrator = std::make_unique<Registrator>(channel, getDeviceUuid(), getMissionRequestUuid());
 
                 while(!m_stop) {
@@ -246,7 +251,6 @@ void AsyncClient::run()
                             auto result = registrator->registerMission();
                             if(result) {
                                 setMissionUuid(result.value());
-                                syncPoint.start();
                                 tracker->setMissionUuid(m_missionRequestUuid);
                                 setStatus(Registered);
                             }
@@ -265,8 +269,8 @@ void AsyncClient::run()
                         uint ts = mandala->valueByName("dl_timestamp").toUInt();
                         if(tracker->write(gpsaltitude, latitude, longitude, gspeed, ts)) {
                             emit trackerSynced();
-                            syncPoint.start();
                         }
+                        syncPoint.start();
 
                         altitudeBuffer.push_back(altitude);
                         if(altitudeBuffer.size() > 5)
@@ -288,7 +292,7 @@ void AsyncClient::run()
                         }
                     }
 
-                    if(channel->GetState(false) == GRPC_CHANNEL_SHUTDOWN) {
+                    if(channel->GetState(true) != GRPC_CHANNEL_READY) {
                         std::cerr << "Lost connection" << std::endl;
                         break;
                     }
@@ -298,7 +302,6 @@ void AsyncClient::run()
         } else
             std::cerr << "Can't create channel" << std::endl;
         setIsConnected(false);
-        setStatus(None);
         msleep(1000);
     }
 }
