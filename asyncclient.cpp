@@ -5,6 +5,7 @@
 #include "Vehicles/Vehicles.h"
 #include "Mission/VehicleMission.h"
 #include "Mission/Waypoint.h"
+#include "App/AppLog.h"
 
 Tracker::Tracker(std::shared_ptr<grpc::Channel> channel):
     m_stub(TrackingService::NewStub(channel)),
@@ -32,7 +33,7 @@ bool Tracker::write(float altitude, float latitude, float longitude, float gspee
     if(m_writer->Write(request)) {
         return true;
     } else {
-        std::cerr << "Can't write track" << std::endl;
+        apxMsgW() << "Diginavis: Can't write track";
         return false;
     }
 }
@@ -79,8 +80,7 @@ std::optional<QString> Registrator::registerMission()
     if(result.ok()) {
         return QString::fromStdString(response.missionuuid());
     } else {
-        std::cerr << result.error_message() << std::endl;
-        std::cerr << result.error_details() << std::endl;
+        apxMsgW() << "Diginavis: " << QString::fromStdString(result.error_message());
         return std::nullopt;
     }
 }
@@ -105,8 +105,7 @@ void Registrator::updateMission(const QString &missionUuid)
 
     auto result = m_stub->updateWayPoints(&clientContext, request, &response);
     if(!result.ok()) {
-        std::cerr << result.error_message() << std::endl;
-        std::cerr << result.error_details() << std::endl;
+        apxMsgW() << "Diginavis: " << QString::fromStdString(result.error_message());
     }
 }
 
@@ -121,8 +120,7 @@ bool Registrator::updateStatus(const QString &missionUuid, MissionStatus status)
 
     auto result = m_stub->update(&clientContext, request, &response);
     if(!result.ok()) {
-        std::cerr << result.error_message() << std::endl;
-        std::cerr << result.error_details() << std::endl;
+        apxMsgW() << "Diginavis: " << QString::fromStdString(result.error_message());
     }
 
     return result.ok();
@@ -293,14 +291,14 @@ void AsyncClient::run()
                     }
 
                     if(channel->GetState(true) != GRPC_CHANNEL_READY) {
-                        std::cerr << "Lost connection" << std::endl;
+                        apxMsgW() << "Diginavis: Lost connection";
                         break;
                     }
                     msleep(1);
                 }
             }
         } else
-            std::cerr << "Can't create channel" << std::endl;
+            apxMsgW() << "Diginavis: Can't create channel";
         setIsConnected(false);
         msleep(1000);
     }
