@@ -30,10 +30,11 @@ private:
 class Registrator
 {
 public:
-    Registrator(std::shared_ptr<grpc::Channel> channel,
-                const QString &deviceUuid, const QString &flightRequestUuid);
+    Registrator(std::shared_ptr<grpc::Channel> channel);
 
     std::optional<QString> registerMission();
+    void setDeviceUuid(const QString &uuid);
+    void setFlightRequestUuid(const QString &uuid);
     void updateMission(const QString &missionUuid);
     bool updateStatus(const QString &missionUuid, MissionStatus status);
 

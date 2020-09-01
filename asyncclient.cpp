@@ -49,12 +49,19 @@ Tracker::~Tracker()
     m_writer->Finish();
 }
 
-Registrator::Registrator(std::shared_ptr<grpc::Channel> channel,
-                         const QString &deviceUuid, const QString &flightRequestUuid):
-    m_stub(MissionService::NewStub(channel)),
-    m_deviceUuid(deviceUuid),
-    m_flightRequestUuid(flightRequestUuid)
+Registrator::Registrator(std::shared_ptr<grpc::Channel> channel):
+    m_stub(MissionService::NewStub(channel))
 {
+}
+
+void Registrator::setDeviceUuid(const QString &uuid)
+{
+    m_deviceUuid = uuid;
+}
+
+void Registrator::setFlightRequestUuid(const QString &uuid)
+{
+    m_flightRequestUuid = uuid;
 }
 
 std::optional<QString> Registrator::registerMission()
@@ -240,12 +247,14 @@ void AsyncClient::run()
                 setIsConnected(true);
                 auto tracker = std::make_unique<Tracker>(channel);
                 tracker->setMissionUuid(getMissionUuid());
-                auto registrator = std::make_unique<Registrator>(channel, getDeviceUuid(), getMissionRequestUuid());
+                auto registrator = std::make_unique<Registrator>(channel);
 
                 while(!m_stop) {
                     auto task = getTask();
                     if(task) {
                         if(task.value() == RegisterMission) {
+                            registrator->setDeviceUuid(getDeviceUuid());
+                            registrator->setFlightRequestUuid(getMissionRequestUuid());
                             auto result = registrator->registerMission();
                             if(result) {
                                 setMissionUuid(result.value());

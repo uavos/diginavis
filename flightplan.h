@@ -13,6 +13,8 @@ public:
     Flightplan(const std::shared_ptr<AsyncClient> &client, Fact *parent = nullptr);
 
     Fact *f_registration;
+    Fact *f_droneUuid;
+    Fact *f_country;
     ReadOnlyFact *f_uuid;
 
 private:
@@ -20,6 +22,8 @@ private:
 
 private slots:
     void onFlightplanUuidChanged();
+    void onDroneUuidValueChanged();
+    void onCountryValueChanged();
 };
 
 #endif //FLIGHTPLAN_H

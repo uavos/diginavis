@@ -28,9 +28,6 @@ Diginavis::Diginavis(Fact *parent):
     f_lastSync->setIcon("sync");
     f_lastSync->setValueForce("N/A");
 
-    m_client->setDeviceUuid("1546a666-6a07-4f16-9b5f-7f97747c1490");
-    m_client->setMissionRequestUuid("56907fdf-6d71-4ee4-a515-42053ef4e6df");
-
     connect(m_client.get(), &AsyncClient::isConnectedChanged, this, &Diginavis::onIsConnectedChanged);
     connect(m_client.get(), &AsyncClient::statusChanged, this, &Diginavis::onStatusChanged);
     connect(m_client.get(), &AsyncClient::trackerSynced, this, &Diginavis::onTrackerSynced);
