@@ -73,6 +73,8 @@ std::optional<QString> Registrator::registerMission()
     request.set_deviceuuid(m_deviceUuid.toStdString());
     request.set_flightrequestuuid(m_flightRequestUuid.toStdString());
     auto waypoints = Vehicles::instance()->current()->f_mission->f_waypoints;
+    if(!qgetenv("DIGINAVIS_DEBUG").isEmpty())
+        std::cout << "WAYPOINTS" << std::endl;
     for(int i = 0; i < waypoints->size(); i++) {
         auto waypoint = dynamic_cast<Waypoint *>(waypoints->child(i));
         if(waypoint) {
@@ -80,6 +82,8 @@ std::optional<QString> Registrator::registerMission()
             point->set_altitude(waypoint->f_altitude->value().toFloat());
             point->set_latitude(waypoint->f_latitude->value().toFloat());
             point->set_longitude(waypoint->f_longitude->value().toFloat());
+            if(!qgetenv("DIGINAVIS_DEBUG").isEmpty())
+                std::cout << point->latitude() << " " << point->longitude() << " " << point->altitude() << std::endl;
         }
     }
 
