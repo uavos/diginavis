@@ -269,12 +269,11 @@ void AsyncClient::run()
                     if(getStatus() != None && syncPoint.elapsed() > SYNC_INTERVAL) {
                         auto mandala = Vehicles::instance()->current()->f_mandala;
                         float altitude = mandala->valueByName("altitude").toFloat();
-                        float gpsaltitude = mandala->valueByName("gps_hmsl").toFloat();
                         float latitude = mandala->valueByName("gps_lat").toFloat();
                         float longitude = mandala->valueByName("gps_lon").toFloat();
                         float gspeed = mandala->valueByName("gSpeed").toFloat();
                         uint64_t ts = QDateTime::currentDateTime().toMSecsSinceEpoch();
-                        if(tracker->write(gpsaltitude, latitude, longitude, gspeed, ts)) {
+                        if(tracker->write(altitude, latitude, longitude, gspeed, ts)) {
                             emit trackerSynced();
                         }
                         syncPoint.start();
