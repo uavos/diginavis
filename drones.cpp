@@ -3,23 +3,20 @@
 #include "App/App.h"
 
 Drones::Drones(Fact *parent):
-    Fact(parent, "drones", "My drones", "", Fact::Group, "airplane")
+    HttpApiBase(parent, "drones", "My drones", "", Fact::Group | Fact::FlatModel, "airplane")
 {
     connect(this, &Fact::triggered, this, &Drones::onTriggered);
-    connect(&m_network, &QNetworkAccessManager::finished, this, &Drones::onRequestFinished);
-}
-
-void Drones::setBearerToken(const QString &token)
-{
-    m_bearerToken = token;
 }
 
 void Drones::onTriggered()
 {
-    QNetworkRequest request;
-    request.setUrl(URL);
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setRawHeader("Authorization", QString("Bearer %1").arg(m_bearerToken).toUtf8());
+    QNetworkRequest request = makeRequest(URL);
+    m_network.get(request);
+}
+
+void Drones::request()
+{
+    QNetworkRequest request = makeRequest(URL);
     m_network.get(request);
 }
 
@@ -37,5 +34,6 @@ void Drones::onRequestFinished(QNetworkReply *reply)
         Fact *fact = new Fact(this, uuid, model, serial, Fact::NoFlags, "dots-horizontal");
         f_drones.append(fact);
     }
-    App::instance()->jsync(this);
+    App::jsync(this);
+    emit dronesReceived();
 }

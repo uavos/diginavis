@@ -3,9 +3,9 @@
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
 
-#include "Fact/Fact.h"
+#include "httpapibase.h"
 
-class DroneCreator: public Fact
+class DroneCreator: public HttpApiBase
 {
     Q_OBJECT
 public:
@@ -23,14 +23,8 @@ public:
 
     Fact *f_createStatus;
 
-    void setBearerToken(const QString &token);
-
 private slots:
     void onTriggered();
     void onCreateTriggered();
-    void onRequestFinished(QNetworkReply *reply);
-
-private:
-    QString m_bearerToken;
-    QNetworkAccessManager m_network;
+    void onRequestFinished(QNetworkReply *reply) override;
 };

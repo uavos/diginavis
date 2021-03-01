@@ -1,7 +1,7 @@
 #include "dronecreator.h"
 
 DroneCreator::DroneCreator(Fact *parent):
-    Fact(parent, "create_drone", "Create drone", "", FactBase::Section, "plus-circle-outline")
+    HttpApiBase(parent, "create_drone", "Create drone", "", FactBase::Section, "plus-circle-outline")
 {
     f_serialNumber = new Fact(this, "serial_number", "Serial number", "", Fact::Text);
     f_type = new Fact(this, "type", "Type", "", Fact::Text);
@@ -18,14 +18,8 @@ DroneCreator::DroneCreator(Fact *parent):
     f_createStatus = new Fact(this, "create_result", "", "", Fact::NoFlags);
     f_createStatus->setVisible(false);
 
-    connect(&m_network, &QNetworkAccessManager::finished, this, &DroneCreator::onRequestFinished);
     connect(f_createButton, &Fact::triggered, this, &DroneCreator::onCreateTriggered);
     connect(this, &Fact::triggered, this, &DroneCreator::onTriggered);
-}
-
-void DroneCreator::setBearerToken(const QString &token)
-{
-    m_bearerToken = token;
 }
 
 void DroneCreator::onTriggered()
@@ -40,10 +34,6 @@ void DroneCreator::onTriggered()
 
 void DroneCreator::onCreateTriggered()
 {
-    QNetworkRequest request;
-    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
-    request.setRawHeader("Authorization", QString("Bearer %1").arg(m_bearerToken).toUtf8());
-    request.setUrl(URL);
 
     QJsonObject root;
     QJsonObject applicant;
@@ -68,6 +58,8 @@ void DroneCreator::onCreateTriggered()
     root["applicant"] = applicant;
     root["uav"] = uav;
     QJsonDocument doc(root);
+
+    QNetworkRequest request = makeRequest(URL);
     m_network.post(request, doc.toJson());
 
     for(auto f: facts())
@@ -87,5 +79,5 @@ void DroneCreator::onRequestFinished(QNetworkReply *reply)
     if(uavUuid.isEmpty())
         f_createStatus->setTitle("FAIL");
     else
-        f_createStatus->setTitle("Success. Please wait moderator response.");
+        f_createStatus->setTitle("Success. Please wait for moderator response.");
 }

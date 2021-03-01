@@ -19,7 +19,10 @@ Diginavis::Diginavis(Fact *parent):
     f_authorization = new Authorization(this);
 
     f_drones = new Drones(this);
-    f_createDrone = new DroneCreator(f_drones);
+    f_droneCreator = new DroneCreator(f_drones);
+
+    f_requests = new FlightRequests(this);
+    f_requestCreator = new FlightRequestCreator(f_requests);
 
     f_status = new ReadOnlyFact(this, "status", "Status", "", Fact::Text);
     f_status->setIcon("format-list-bulleted");
@@ -33,9 +36,11 @@ Diginavis::Diginavis(Fact *parent):
     f_lastSync->setIcon("sync");
     f_lastSync->setValueForce("N/A");
 
-    connect(f_authorization, &Authorization::bearerTokenReceived, f_createDrone, &DroneCreator::setBearerToken);
+    connect(f_authorization, &Authorization::bearerTokenReceived, f_droneCreator, &DroneCreator::setBearerToken);
     connect(f_authorization, &Authorization::bearerTokenReceived, f_drones, &Drones::setBearerToken);
-    f_createDrone->setBearerToken(f_authorization->getBearerToken());
+    connect(f_authorization, &Authorization::bearerTokenReceived, f_requestCreator, &FlightRequestCreator::setBearerToken);
+    connect(f_authorization, &Authorization::bearerTokenReceived, f_requests, &FlightRequests::setBearerToken);
+    f_droneCreator->setBearerToken(f_authorization->getBearerToken());
 
     connect(m_client.get(), &AsyncClient::isConnectedChanged, this, &Diginavis::onIsConnectedChanged);
     connect(m_client.get(), &AsyncClient::statusChanged, this, &Diginavis::onStatusChanged);

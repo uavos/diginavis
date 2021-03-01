@@ -8,6 +8,8 @@
 #include "authorization.h"
 #include "dronecreator.h"
 #include "drones.h"
+#include "flightrequests.h"
+#include "flightrequestcreator.h"
 
 class Diginavis: public Fact
 {
@@ -20,9 +22,11 @@ public:
     ReadOnlyFact *f_status;
     ReadOnlyFact *f_lastSync;
     Flightplan *f_flightplan;
-    DroneCreator *f_createDrone;
+    DroneCreator *f_droneCreator;
     Authorization *f_authorization;
     Drones *f_drones;
+    FlightRequests *f_requests;
+    FlightRequestCreator *f_requestCreator;
 
 private:
     std::shared_ptr<AsyncClient> m_client;
