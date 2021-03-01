@@ -10,15 +10,18 @@ qt5_dep = dependency('qt5', modules: ['Core',
 
 cpp = meson.get_compiler('cpp')
 #apx
-apx_sdk = '/home/pavel/apx_sdk'
-apx_inc = include_directories(join_paths(apx_sdk, 'include/ApxGcs'),
-                              join_paths(apx_sdk, 'include/ApxCore'),
-                              join_paths(apx_sdk, 'include/ApxData'),
-                              join_paths(apx_sdk, 'include/ApxShared'))
-apx_dep = [cpp.find_library('ApxCore', dirs: join_paths(apx_sdk, 'lib')),
-           cpp.find_library('ApxData', dirs: join_paths(apx_sdk, 'lib')),
-           cpp.find_library('ApxGcs', dirs: join_paths(apx_sdk, 'lib')),
-           cpp.find_library('ApxShared', dirs: join_paths(apx_sdk, 'lib'))]
+apx_sdk_inc = '/home/pavel/sources/apx-gcs/'
+apx_inc = include_directories(join_paths(apx_sdk_inc, 'src/lib/ApxGcs'),
+                              join_paths(apx_sdk_inc, 'src/lib/ApxCore'),
+                              join_paths(apx_sdk_inc, 'src/lib/ApxData'),
+                              join_paths(apx_sdk_inc, 'shared'),
+                              join_paths(apx_sdk_inc, 'shared/common'),
+                              join_paths(apx_sdk_inc, 'shared/crc/include'),
+                              '/home/pavel/sources/apx-gcs/build/modules/shared.mandala/gensrc/')
+apx_sdk_lib = '/home/pavel/sources/apx-gcs/build/out/'
+apx_dep = [cpp.find_library('ApxCore', dirs: join_paths(apx_sdk_lib, 'lib')),
+           cpp.find_library('ApxData', dirs: join_paths(apx_sdk_lib, 'lib')),
+           cpp.find_library('ApxGcs', dirs: join_paths(apx_sdk_lib, 'lib'))]
 
 #qt
 qt5 = import('qt5')
@@ -52,7 +55,41 @@ proto_src = gen.process('Mission.proto', 'Tracking.proto')
 protobuf_dep = cpp.find_library('protobuf', dirs: proto_sdk_lib, static: true)
 grpc_dep = [cpp.find_library('grpc++_unsecure', dirs: proto_sdk_lib, static: true),
             cpp.find_library('grpc_unsecure', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('gpr', dirs: proto_sdk_lib, static: true)]
+            cpp.find_library('gpr', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('grpc++_unsecure', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_raw_hash_set', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_hashtablez_sampler', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_exponential_biased', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_hash', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_city', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_statusor', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_bad_variant_access', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_status', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_cord', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_str_format_internal', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_synchronization', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_graphcycles_internal', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_symbolize', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_demangle_internal', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_stacktrace', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_debugging_internal', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_malloc_internal', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_time', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_time_zone', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_civil_time', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_strings', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_strings_internal', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_throw_delegate', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_int128', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_base', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_spinlock_wait', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_bad_optional_access', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_raw_logging_internal', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('absl_log_severity', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('cares', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('address_sorting', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('grpc', dirs: proto_sdk_lib, static: true),
+            cpp.find_library('upb', dirs: proto_sdk_lib, static: true)]
 
 #other
 thread_dep = dependency('threads')
