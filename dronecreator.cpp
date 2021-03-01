@@ -1,7 +1,7 @@
-#include "createdrone.h"
+#include "dronecreator.h"
 
-Drones::Drones(Fact *parent):
-    Fact(parent, "drones", "Drones", "", FactBase::Section)
+DroneCreator::DroneCreator(Fact *parent):
+    Fact(parent, "create_drone", "Create drone", "", FactBase::Section, "plus-circle-outline")
 {
     f_serialNumber = new Fact(this, "serial_number", "Serial number", "", Fact::Text);
     f_type = new Fact(this, "type", "Type", "", Fact::Text);
@@ -15,20 +15,20 @@ Drones::Drones(Fact *parent):
 
     f_createButton = new Fact(this, "create", "Create", "", Fact::Apply | Fact::Action);
 
-    f_createStatus = new Fact(this, "create_result", "Result", "", Fact::Text);
+    f_createStatus = new Fact(this, "create_result", "", "", Fact::NoFlags);
     f_createStatus->setVisible(false);
 
-    connect(&m_network, &QNetworkAccessManager::finished, this, &Drones::onRequestFinished);
-    connect(f_createButton, &Fact::triggered, this, &Drones::onCreateTriggered);
-    connect(this, &Fact::triggered, this, &Drones::onTriggered);
+    connect(&m_network, &QNetworkAccessManager::finished, this, &DroneCreator::onRequestFinished);
+    connect(f_createButton, &Fact::triggered, this, &DroneCreator::onCreateTriggered);
+    connect(this, &Fact::triggered, this, &DroneCreator::onTriggered);
 }
 
-void Drones::setBearerToken(const QString &token)
+void DroneCreator::setBearerToken(const QString &token)
 {
     m_bearerToken = token;
 }
 
-void Drones::onTriggered()
+void DroneCreator::onTriggered()
 {
     for(auto f: facts())
         if(f != f_createStatus)
@@ -38,7 +38,7 @@ void Drones::onTriggered()
     f_createButton->setVisible(true);
 }
 
-void Drones::onCreateTriggered()
+void DroneCreator::onCreateTriggered()
 {
     QNetworkRequest request;
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
@@ -75,17 +75,17 @@ void Drones::onCreateTriggered()
             f->setVisible(false);
         else
             f->setVisible(true);
-    f_createStatus->setValue("Please wait...");
+    f_createStatus->setTitle("Please wait...");
     f_createButton->setVisible(false);
 }
 
-void Drones::onRequestFinished(QNetworkReply *reply)
+void DroneCreator::onRequestFinished(QNetworkReply *reply)
 {
     QByteArray data = reply->readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
     QString uavUuid = doc.object()["data"].toObject()["uav"].toObject()["uavUuid"].toString();
     if(uavUuid.isEmpty())
-        f_createStatus->setValue("FAIL");
+        f_createStatus->setTitle("FAIL");
     else
-        f_createStatus->setValue("SUCCESS");
+        f_createStatus->setTitle("Success. Please wait moderator response.");
 }

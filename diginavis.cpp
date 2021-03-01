@@ -18,7 +18,8 @@ Diginavis::Diginavis(Fact *parent):
 
     f_authorization = new Authorization(this);
 
-    f_createDrone = new Drones(this);
+    f_drones = new Drones(this);
+    f_createDrone = new DroneCreator(f_drones);
 
     f_status = new ReadOnlyFact(this, "status", "Status", "", Fact::Text);
     f_status->setIcon("format-list-bulleted");
@@ -32,7 +33,8 @@ Diginavis::Diginavis(Fact *parent):
     f_lastSync->setIcon("sync");
     f_lastSync->setValueForce("N/A");
 
-    connect(f_authorization, &Authorization::bearerTokenReceived, f_createDrone, &Drones::setBearerToken);
+    connect(f_authorization, &Authorization::bearerTokenReceived, f_createDrone, &DroneCreator::setBearerToken);
+    connect(f_authorization, &Authorization::bearerTokenReceived, f_drones, &Drones::setBearerToken);
     f_createDrone->setBearerToken(f_authorization->getBearerToken());
 
     connect(m_client.get(), &AsyncClient::isConnectedChanged, this, &Diginavis::onIsConnectedChanged);

@@ -6,9 +6,12 @@ project('diginavis', 'cpp',
                             'prefix=~/Документы/UAVOS/Plugins/'])
 
 qt5_dep = dependency('qt5', modules: ['Core',
+                                      'Gui',
                                       'Network',
                                       'Positioning',
-                                      'Qml'])
+                                      'Qml',
+                                      'Quick',
+                                      'Widgets'])
 
 cpp = meson.get_compiler('cpp')
 #apx
@@ -31,7 +34,8 @@ moc_files = qt5.preprocess(moc_headers: ['asyncclient.h',
                                          'authorization.h',
                                          'diginavisplugin.h',
                                          'diginavis.h',
-                                         'createdrone.h',
+                                         'dronecreator.h',
+                                         'drones.h',
                                          'flightplan.h',
                                          'readonlyfact.h'],
                            include_directories: apx_inc,
@@ -104,7 +108,8 @@ shared_library('diginavis',
                'authorization.cpp',
                'diginavisplugin.cpp',
                'diginavis.cpp',
-               'createdrone.cpp',
+               'dronecreator.cpp',
+               'drones.cpp',
                'flightplan.cpp',
                'readonlyfact.cpp',
                 protogrpc_src,
