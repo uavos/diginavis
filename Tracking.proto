@@ -8,10 +8,10 @@ service TrackingService {
 }
 
 message TrackingRequest {
-    Point point = 1;
-    int32 speed = 2;
-    string mission_uuid = 3;
-    Timestamp time = 4;
+  Point point = 1;
+  double speed = 2;
+  string mission_uuid = 3;
+  Timestamp time = 4;
 }
 
 message Point {
