@@ -16,6 +16,10 @@ Diginavis::Diginavis(Fact *parent):
     setIcon("cloud");
     f_flightplan = new Flightplan(m_client, this);
 
+    f_authorization = new Authorization(this);
+
+    f_createDrone = new Drones(this);
+
     f_status = new ReadOnlyFact(this, "status", "Status", "", Fact::Text);
     f_status->setIcon("format-list-bulleted");
     f_status->setValue("None");
@@ -27,6 +31,9 @@ Diginavis::Diginavis(Fact *parent):
     f_lastSync = new ReadOnlyFact(this, "last_sync", "Last sync", "", Fact::Text);
     f_lastSync->setIcon("sync");
     f_lastSync->setValueForce("N/A");
+
+    connect(f_authorization, &Authorization::bearerTokenReceived, f_createDrone, &Drones::setBearerToken);
+    f_createDrone->setBearerToken(f_authorization->getBearerToken());
 
     connect(m_client.get(), &AsyncClient::isConnectedChanged, this, &Diginavis::onIsConnectedChanged);
     connect(m_client.get(), &AsyncClient::statusChanged, this, &Diginavis::onStatusChanged);

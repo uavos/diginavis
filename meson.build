@@ -6,7 +6,9 @@ project('diginavis', 'cpp',
                             'prefix=~/Документы/UAVOS/Plugins/'])
 
 qt5_dep = dependency('qt5', modules: ['Core',
-                                      'Positioning'])
+                                      'Network',
+                                      'Positioning',
+                                      'Qml'])
 
 cpp = meson.get_compiler('cpp')
 #apx
@@ -26,8 +28,10 @@ apx_dep = [cpp.find_library('ApxCore', dirs: join_paths(apx_sdk_lib, 'lib')),
 #qt
 qt5 = import('qt5')
 moc_files = qt5.preprocess(moc_headers: ['asyncclient.h',
+                                         'authorization.h',
                                          'diginavisplugin.h',
                                          'diginavis.h',
+                                         'createdrone.h',
                                          'flightplan.h',
                                          'readonlyfact.h'],
                            include_directories: apx_inc,
@@ -97,8 +101,10 @@ zlib = dependency('zlib')
 
 shared_library('diginavis',
                'asyncclient.cpp',
+               'authorization.cpp',
                'diginavisplugin.cpp',
                'diginavis.cpp',
+               'createdrone.cpp',
                'flightplan.cpp',
                'readonlyfact.cpp',
                 protogrpc_src,

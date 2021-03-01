@@ -1,11 +1,12 @@
-#ifndef DIGINAVIS_H
-#define DIGINAVIS_H
+#pragma once
 
 #include "Fact/Fact.h"
 #include "Vehicles/Vehicle.h"
 #include "asyncclient.h"
 #include "flightplan.h"
 #include "readonlyfact.h"
+#include "authorization.h"
+#include "createdrone.h"
 
 class Diginavis: public Fact
 {
@@ -18,6 +19,8 @@ public:
     ReadOnlyFact *f_status;
     ReadOnlyFact *f_lastSync;
     Flightplan *f_flightplan;
+    Drones *f_createDrone;
+    Authorization *f_authorization;
 
 private:
     std::shared_ptr<AsyncClient> m_client;
@@ -29,5 +32,3 @@ private slots:
     void onCurrentVehicleChanged();
     void onTrackerSynced();
 };
-
-#endif // !DIGINAVIS_H
