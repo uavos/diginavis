@@ -4,7 +4,6 @@
 #include "Fact/Fact.h"
 #include "flightplan.h"
 #include "asyncclient.h"
-#include "readonlyfact.h"
 
 class Flightplan: public Fact
 {
@@ -15,7 +14,7 @@ public:
     Fact *f_registration;
     Fact *f_droneUuid;
     Fact *f_country;
-    ReadOnlyFact *f_uuid;
+    Fact *f_uuid;
 
 private:
     std::shared_ptr<AsyncClient> m_client;

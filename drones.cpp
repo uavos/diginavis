@@ -3,7 +3,7 @@
 #include "App/App.h"
 
 Drones::Drones(Fact *parent):
-    HttpApiBase(parent, "drones", "My drones", "", Fact::Group | Fact::FlatModel, "airplane")
+    HttpApiBase(parent, "drones", "My drones", "", Fact::Group, "airplane")
 {
     connect(this, &Fact::triggered, this, &Drones::onTriggered);
 }
@@ -24,6 +24,7 @@ void Drones::onRequestFinished(QNetworkReply *reply)
 {
     qDeleteAll(f_drones);
     f_drones.clear();
+    App::jsync(this);
     QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
     auto uavs = doc.object()["data"].toArray();
     for(auto uavref: uavs) {
@@ -32,6 +33,7 @@ void Drones::onRequestFinished(QNetworkReply *reply)
         const QString model = uav["model"].toString();
         const QString serial = uav["serialNumber"].toString();
         Fact *fact = new Fact(this, uuid, model, serial, Fact::NoFlags, "dots-horizontal");
+        fact->setProperty("uuid", uuid);
         f_drones.append(fact);
     }
     App::jsync(this);

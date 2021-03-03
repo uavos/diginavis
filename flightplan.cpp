@@ -15,7 +15,7 @@ Flightplan::Flightplan(const std::shared_ptr<AsyncClient> &client, Fact *parent)
     f_country = new Fact(this, "country", "Country", "", Fact::Enum);
     f_country->setEnumStrings({"Russia", "Austria", "Belarus"});
     f_country->setIcon("earth");
-    f_uuid = new ReadOnlyFact(this, "uuid", "UUID", "", Fact::Text);
+    f_uuid = new Fact(this, "uuid", "UUID", "", Fact::Text);
 
     connect(m_client.get(), &AsyncClient::flightplanUuidChanged, this, &Flightplan::onFlightplanUuidChanged);
     connect(f_registration, &Fact::triggered, m_client.get(), &AsyncClient::registerMission);
@@ -27,7 +27,7 @@ Flightplan::Flightplan(const std::shared_ptr<AsyncClient> &client, Fact *parent)
 
 void Flightplan::onFlightplanUuidChanged()
 {
-    f_uuid->setValueForce(m_client->getMissionUuid());
+    f_uuid->setValue(m_client->getMissionUuid());
 }
 
 void Flightplan::onDroneUuidValueChanged()

@@ -5,7 +5,7 @@
 #include <QNetworkReply>
 
 Authorization::Authorization(Fact *parent):
-    ReadOnlyFact(parent, "authorization", "Authorization", "", Fact::Text)
+    Fact(parent, "authorization", "Authorization", "", Fact::Text)
 {
     m_timer.setSingleShot(false);
     m_timer.setInterval(5000);
@@ -37,10 +37,10 @@ void Authorization::onRequestFinished(QNetworkReply *reply)
     QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
     m_bearerToken = doc.object()["access_token"].toString();
     if(!m_bearerToken.isEmpty()) {
-        setValueForce("OK");
+        setValue("OK");
         emit bearerTokenReceived(m_bearerToken);
     } else {
-        setValueForce("Not authorized");
+        setValue("Not authorized");
     }
 }
 

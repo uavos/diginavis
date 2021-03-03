@@ -2,9 +2,10 @@
 
 #include <QTimer>
 #include <QNetworkAccessManager>
-#include "readonlyfact.h"
 
-class Authorization: public ReadOnlyFact
+#include "Fact/Fact.h"
+
+class Authorization: public Fact
 {
     Q_OBJECT
 public:

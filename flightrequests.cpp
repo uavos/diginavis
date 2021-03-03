@@ -27,8 +27,11 @@ void FlightRequests::onRequestFinished(QNetworkReply *reply)
     for(auto flight: array) {
         auto flightplan = flight.toObject()["flightPlan"].toObject();
         QString uuid = flightplan["flightPlanUuid"].toString();
+        QDateTime startTime = QDateTime::fromString(flightplan["scheduledDateTimeStart"].toString(), Qt::ISODate);
+        QDateTime endTime = QDateTime::fromString(flightplan["scheduledDateTimeEnd"].toString(), Qt::ISODate);
+        qDebug() << startTime.isNull() << startTime.isValid();
         QString status = flight.toObject()["processingStatus"].toString();
-        QString uavModel = flightplan["uavs"].toArray().first().toObject()["model"].toString();
+        QString model = flightplan["uavs"].toArray().first().toObject()["model"].toString();
         QString serialNumber = flightplan["uavs"].toArray().first().toObject()["serialNumber"].toString();
         Fact *parent = nullptr;
         if(status == "APPROVED")
@@ -37,11 +40,15 @@ void FlightRequests::onRequestFinished(QNetworkReply *reply)
             parent = f_declined;
         else
             parent = f_pending;
-        Fact *request = new Fact(parent, uuid, uavModel, serialNumber, Fact::NoFlags);
+        QString title = QString("%1 - %2")
+                            .arg(startTime.toString("dd.MM.yyyy(hh:mm:ss)"))
+                            .arg(endTime.toString("dd.MM.yyyy(hh:mm:ss)"));
+        QString description = QString("%1(%2)").arg(model).arg(serialNumber);
+        Fact *request = new Fact(parent, uuid, title, description, Fact::NoFlags);
         f_requests.append(request);
     }
-    f_approved->setTitle(QString("Approved (%1)").arg(f_approved->facts().size()));
-    f_pending->setTitle(QString("Pending (%1)").arg(f_pending->facts().size()));
-    f_declined->setTitle(QString("Declined (%1)").arg(f_declined->facts().size()));
+    f_approved->setValue(QString("%1").arg(f_approved->facts().size()));
+    f_pending->setValue(QString("%1").arg(f_pending->facts().size()));
+    f_declined->setValue(QString("%1").arg(f_declined->facts().size()));
     App::jsync(this);
 }
