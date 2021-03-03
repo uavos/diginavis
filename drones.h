@@ -13,6 +13,8 @@ public:
 
     QVector<Fact *> f_drones;
 
+    Fact *f_refresh;
+
     void request();
 
 private slots:

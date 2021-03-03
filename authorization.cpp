@@ -5,7 +5,7 @@
 #include <QNetworkReply>
 
 Authorization::Authorization(Fact *parent):
-    Fact(parent, "authorization", "Authorization", "", Fact::Text)
+    Fact(parent, "authorization", "Authorization", "", Fact::NoFlags, "login")
 {
     m_timer.setSingleShot(false);
     m_timer.setInterval(5000);

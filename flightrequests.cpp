@@ -3,13 +3,16 @@
 #include "App/App.h"
 
 FlightRequests::FlightRequests(Fact *parent):
-    HttpApiBase(parent, "flight_requests", "My flight requests", "", Fact::Group, "airplane-takeoff")
+    HttpApiBase(parent, "flight_requests", "Flight requests", "", Fact::Group, "airplane-takeoff")
 {
-    connect(this, &FlightRequests::triggered, this, &FlightRequests::onTriggered);
-
     f_approved = new Fact(this, "approved", "Approved", "Ready to flight", Fact::Group, "check");
     f_pending = new Fact(this, "pending", "Pending", "Under consideration", Fact::Group, "progress-clock");
     f_declined = new Fact(this, "declined", "Declined", "Forbidden to flight", Fact::Group, "close");
+
+    f_refresh = new Fact(this, "refresh", "Refresh", "", Fact::Action | Fact::Apply, "refresh");
+
+    connect(parent, &FlightRequests::triggered, this, &FlightRequests::onTriggered);
+    connect(f_refresh, &Fact::triggered, this, &FlightRequests::onTriggered);
 }
 
 void FlightRequests::onTriggered()
@@ -21,6 +24,7 @@ void FlightRequests::onTriggered()
 void FlightRequests::onRequestFinished(QNetworkReply *reply)
 {
     qDeleteAll(f_requests);
+    f_requests.clear();
 
     QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
     auto array = doc.object()["data"].toArray();
@@ -51,4 +55,6 @@ void FlightRequests::onRequestFinished(QNetworkReply *reply)
     f_pending->setValue(QString("%1").arg(f_pending->facts().size()));
     f_declined->setValue(QString("%1").arg(f_declined->facts().size()));
     App::jsync(this);
+
+    setValue(array.size());
 }

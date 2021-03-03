@@ -15,11 +15,13 @@ Diginavis::Diginavis(Fact *parent):
 
     f_authorization = new Authorization(this);
 
-    f_drones = new Drones(this);
-    f_droneCreator = new DroneCreator(f_drones);
+    f_myDrones = new Fact(this, "my_drones", "My drones", "", Fact::Group, "airplane");
+    f_droneCreator = new DroneCreator(f_myDrones);
+    f_drones = new Drones(f_myDrones);
 
-    f_requests = new FlightRequests(this);
-    f_requestCreator = new FlightRequestCreator(f_requests);
+    f_myRequests = new Fact(this, "my_requests", "My requests", "", Fact::Group, "airplane-takeoff");
+    f_requestCreator = new FlightRequestCreator(f_myRequests);
+    f_requests = new FlightRequests(f_myRequests);
 
     f_status = new Fact(this, "status", "Status", "", Fact::Text);
     f_status->setIcon("format-list-bulleted");

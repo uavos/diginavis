@@ -3,9 +3,12 @@
 #include "App/App.h"
 
 Drones::Drones(Fact *parent):
-    HttpApiBase(parent, "drones", "My drones", "", Fact::Group, "airplane")
+    HttpApiBase(parent, "drones", "Drones", "", Fact::Group, "airplane")
 {
-    connect(this, &Fact::triggered, this, &Drones::onTriggered);
+    f_refresh = new Fact(this, "refresh", "Refresh", "", Fact::Action | Fact::Apply, "refresh");
+
+    connect(parent, &Fact::triggered, this, &Drones::onTriggered);
+    connect(f_refresh, &Fact::triggered, this, &Drones::onTriggered);
 }
 
 void Drones::onTriggered()
@@ -38,4 +41,5 @@ void Drones::onRequestFinished(QNetworkReply *reply)
     }
     App::jsync(this);
     emit dronesReceived();
+    setValue(uavs.size());
 }

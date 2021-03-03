@@ -22,9 +22,13 @@ public:
     Fact *f_status;
     Fact *f_lastSync;
     Flightplan *f_flightplan;
-    DroneCreator *f_droneCreator;
     Authorization *f_authorization;
+
+    Fact *f_myDrones;
+    DroneCreator *f_droneCreator;
     Drones *f_drones;
+
+    Fact *f_myRequests;
     FlightRequests *f_requests;
     FlightRequestCreator *f_requestCreator;
 

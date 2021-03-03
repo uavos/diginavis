@@ -13,6 +13,8 @@ public:
     Fact *f_declined;
     Fact *f_pending;
 
+    Fact *f_refresh;
+
     QVector<Fact*> f_requests;
 
 private slots:
