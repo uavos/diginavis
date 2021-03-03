@@ -1,5 +1,4 @@
-#ifndef ASYNCCLIENT_H
-#define ASYNCCLIENT_H
+#pragma once
 
 #include <grpc++/grpc++.h>
 #include <queue>
@@ -33,13 +32,13 @@ public:
     Registrator(std::shared_ptr<grpc::Channel> channel);
 
     std::optional<QString> registerMission();
-    void setDeviceUuid(const QString &uuid);
+    void setDroneUuid(const QString &uuid);
     void setFlightRequestUuid(const QString &uuid);
     void updateMission(const QString &missionUuid);
     bool updateStatus(const QString &missionUuid, MissionStatus status);
 
 private:
-    QString m_deviceUuid;
+    QString m_droneUuid;
     QString m_flightRequestUuid;
     std::unique_ptr<MissionService::Stub> m_stub;
 };
@@ -58,10 +57,10 @@ public:
     };
     AsyncClient(QObject *parent = nullptr);
     void stop();
-    QString getDeviceUuid() const;
-    void setDeviceUuid(const QString &uuid);
-    QString getMissionRequestUuid() const;
-    void setMissionRequestUuid(const QString &uuid);
+    QString getDroneUuid() const;
+    void setDroneUuid(const QString &uuid);
+    QString getFlightRequestUuid() const;
+    void setFlightRequestUuid(const QString &uuid);
     bool isConnected() const;
     QString getHost() const;
     QString getMissionUuid() const;
@@ -78,9 +77,9 @@ private:
         RegisterMission,
         UpdateMission
     };
-    QString m_host = "winavis.d1.project-one.io:6565";
-    QString m_deviceUuid;
-    QString m_missionRequestUuid;
+    const QString m_host = "winavis.project-one.io:6565";
+    QString m_droneUuid;
+    QString m_flightRequestUuid;
     QString m_missionUuid;
     std::atomic_bool m_stop{false};
     std::atomic_bool m_isConnected{false};
@@ -100,5 +99,3 @@ signals:
     void statusChanged();
     void trackerSynced();
 };
-
-#endif // !ASYNCCLIENT_H

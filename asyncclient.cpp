@@ -54,9 +54,9 @@ Registrator::Registrator(std::shared_ptr<grpc::Channel> channel):
 {
 }
 
-void Registrator::setDeviceUuid(const QString &uuid)
+void Registrator::setDroneUuid(const QString &uuid)
 {
-    m_deviceUuid = uuid;
+    m_droneUuid = uuid;
 }
 
 void Registrator::setFlightRequestUuid(const QString &uuid)
@@ -70,7 +70,7 @@ std::optional<QString> Registrator::registerMission()
     clientContext.set_deadline(gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_millis(3000, GPR_TIMESPAN)));
     MissionRequest request;
     MissionResponse response;
-    request.set_deviceuuid(m_deviceUuid.toStdString());
+    request.set_deviceuuid(m_droneUuid.toStdString());
     request.set_flightrequestuuid(m_flightRequestUuid.toStdString());
     auto waypoints = Vehicles::instance()->current()->f_mission->f_waypoints;
     if(!qgetenv("DIGINAVIS_DEBUG").isEmpty())
@@ -169,28 +169,28 @@ void AsyncClient::setMissionUuid(const QString &uuid)
     }
 }
 
-QString AsyncClient::getDeviceUuid() const
+QString AsyncClient::getDroneUuid() const
 {
     std::unique_lock locker(m_ioMutex);
-    return m_deviceUuid;
+    return m_droneUuid;
 }
 
-void AsyncClient::setDeviceUuid(const QString &uuid)
+void AsyncClient::setDroneUuid(const QString &uuid)
 {
     std::unique_lock locker(m_ioMutex);
-    m_deviceUuid = uuid;
+    m_droneUuid = uuid;
 }
 
-QString AsyncClient::getMissionRequestUuid() const
+QString AsyncClient::getFlightRequestUuid() const
 {
     std::unique_lock locker(m_ioMutex);
-    return m_missionRequestUuid;
+    return m_flightRequestUuid;
 }
 
-void AsyncClient::setMissionRequestUuid(const QString &uuid)
+void AsyncClient::setFlightRequestUuid(const QString &uuid)
 {
     std::unique_lock locker(m_ioMutex);
-    m_missionRequestUuid = uuid;
+    m_flightRequestUuid = uuid;
 }
 
 QString AsyncClient::getHost() const
@@ -247,7 +247,9 @@ void AsyncClient::run()
             QElapsedTimer syncPoint;
             syncPoint.start();
             auto deadline = gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_seconds(2, GPR_TIMESPAN));
+            std::cout << m_host.toStdString() << std::endl;
             if(channel->WaitForConnected(deadline)) {
+                std::cout << "Connected" << std::endl;
                 setIsConnected(true);
                 auto tracker = std::make_unique<Tracker>(channel);
                 tracker->setMissionUuid(getMissionUuid());
@@ -257,8 +259,8 @@ void AsyncClient::run()
                     auto task = getTask();
                     if(task) {
                         if(task.value() == RegisterMission) {
-                            registrator->setDeviceUuid(getDeviceUuid());
-                            registrator->setFlightRequestUuid(getMissionRequestUuid());
+                            registrator->setDroneUuid(getDroneUuid());
+                            registrator->setFlightRequestUuid(getFlightRequestUuid());
                             auto result = registrator->registerMission();
                             if(result) {
                                 setMissionUuid(result.value());
@@ -308,6 +310,8 @@ void AsyncClient::run()
                     }
                     msleep(1);
                 }
+            } else {
+                std::cout << "Not connected" << std::endl;
             }
         } else
             apxMsgW() << "Diginavis: Can't create channel";

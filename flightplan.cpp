@@ -32,7 +32,7 @@ void Flightplan::onFlightplanUuidChanged()
 
 void Flightplan::onDroneUuidValueChanged()
 {
-    m_client->setDeviceUuid(f_droneUuid->value().toString());
+    m_client->setDroneUuid(f_droneUuid->value().toString());
 }
 
 void Flightplan::onCountryValueChanged()
@@ -44,5 +44,5 @@ void Flightplan::onCountryValueChanged()
     QString uuid = uuids.value(country);
     if(uuid.isEmpty())
         apxMsgW() << "Diginavis: Unknown country: " << country;
-    m_client->setMissionRequestUuid(uuid);
+    m_client->setFlightRequestUuid(uuid);
 }
