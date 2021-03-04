@@ -37,7 +37,7 @@ moc_files = qt5.preprocess(moc_headers: ['asyncclient.h',
                                          'diginavis.h',
                                          'dronecreator.h',
                                          'drones.h',
-                                         'flightplan.h',
+                                         'flightrequestapproved.h',
                                          'flightrequestcreator.h',
                                          'flightrequests.h',
                                          'httpapibase.h',
@@ -45,17 +45,12 @@ moc_files = qt5.preprocess(moc_headers: ['asyncclient.h',
                            include_directories: apx_inc,
                            dependencies: qt5_dep)
 
-#grpc && protobuf
-proto_sdk = '/home/pavel/grpc_install/'
-proto_sdk_bin = join_paths(proto_sdk, 'bin')
-proto_sdk_lib = join_paths(proto_sdk, 'lib')
-proto_sdk_inc = include_directories(join_paths(proto_sdk, 'include'))
-protoc = find_program(join_paths(proto_sdk_bin, 'protoc'))
+protoc = find_program('protoc')
 gen = generator(protoc,
                 output: ['@BASENAME@.grpc.pb.cc', '@BASENAME@.grpc.pb.h'],
                 arguments: ['--proto_path=@CURRENT_SOURCE_DIR@', 
                             '--grpc_out=@BUILD_DIR@', 
-                            '--plugin=protoc-gen-grpc=' + proto_sdk_bin + '/grpc_cpp_plugin',
+                            '--plugin=protoc-gen-grpc=/usr/bin/grpc_cpp_plugin',
                             '@INPUT@'])
 protogrpc_src = gen.process('Mission.proto', 'Tracking.proto')
 gen = generator(protoc,
@@ -64,44 +59,9 @@ gen = generator(protoc,
                             '--cpp_out=@BUILD_DIR@', 
                             '@INPUT@'])
 proto_src = gen.process('Mission.proto', 'Tracking.proto')
-protobuf_dep = cpp.find_library('protobuf', dirs: proto_sdk_lib, static: true)
-grpc_dep = [cpp.find_library('grpc++_unsecure', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('grpc_unsecure', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('gpr', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('grpc++_unsecure', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_raw_hash_set', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_hashtablez_sampler', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_exponential_biased', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_hash', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_city', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_statusor', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_bad_variant_access', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_status', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_cord', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_str_format_internal', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_synchronization', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_graphcycles_internal', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_symbolize', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_demangle_internal', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_stacktrace', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_debugging_internal', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_malloc_internal', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_time', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_time_zone', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_civil_time', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_strings', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_strings_internal', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_throw_delegate', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_int128', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_base', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_spinlock_wait', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_bad_optional_access', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_raw_logging_internal', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('absl_log_severity', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('cares', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('address_sorting', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('grpc', dirs: proto_sdk_lib, static: true),
-            cpp.find_library('upb', dirs: proto_sdk_lib, static: true)]
+grpcpp_dep = dependency('grpc++')
+protobuf_dep = dependency('protobuf')
+gpr_dep = dependency('gpr')
 
 #other
 thread_dep = dependency('threads')
@@ -115,7 +75,7 @@ shared_library('diginavis',
                'diginavis.cpp',
                'dronecreator.cpp',
                'drones.cpp',
-               'flightplan.cpp',
+               'flightrequestapproved.cpp',
                'flightrequestcreator.cpp',
                'flightrequests.cpp',
                'httpapibase.cpp',
@@ -123,12 +83,12 @@ shared_library('diginavis',
                 protogrpc_src,
                 proto_src,
                 moc_files,
-                include_directories: [apx_inc,
-                                      proto_sdk_inc],
+                include_directories: [apx_inc],
                 dependencies: [apx_dep,
-                               grpc_dep,
-                               protobuf_dep,
+                               gpr_dep,
+                               grpcpp_dep,
                                thread_dep,
+                               protobuf_dep,
                                qt5_dep,
                                zlib],
                 install : true)

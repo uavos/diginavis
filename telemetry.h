@@ -14,6 +14,9 @@ public:
     Fact *f_status;
     Fact *f_lastSync;
 
+    void setBearerToken(const QString &token);
+    void startWork(const QString &requestUuid, const QString &droneUuid);
+
 private slots:
     void onIsConnectedChanged();
     void onStatusChanged();

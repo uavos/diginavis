@@ -1,6 +1,7 @@
 #include "flightrequests.h"
 
 #include "App/App.h"
+#include "flightrequestapproved.h"
 
 FlightRequests::FlightRequests(Fact *parent):
     HttpApiBase(parent, "flight_requests", "Flight requests", "", Fact::Group, "airplane-takeoff")
@@ -33,22 +34,28 @@ void FlightRequests::onRequestFinished(QNetworkReply *reply)
         QString uuid = flightplan["flightPlanUuid"].toString();
         QDateTime startTime = QDateTime::fromString(flightplan["scheduledDateTimeStart"].toString(), Qt::ISODate);
         QDateTime endTime = QDateTime::fromString(flightplan["scheduledDateTimeEnd"].toString(), Qt::ISODate);
-        qDebug() << startTime.isNull() << startTime.isValid();
         QString status = flight.toObject()["processingStatus"].toString();
-        QString model = flightplan["uavs"].toArray().first().toObject()["model"].toString();
-        QString serialNumber = flightplan["uavs"].toArray().first().toObject()["serialNumber"].toString();
-        Fact *parent = nullptr;
-        if(status == "APPROVED")
-            parent = f_approved;
-        else if(status == "DECLINED")
-            parent = f_declined;
-        else
-            parent = f_pending;
+        auto uav = flightplan["uavs"].toArray().first().toObject();
+        QString model = uav["model"].toString();
+        QString serialNumber = uav["serialNumber"].toString();
+        QString uavUuid = uav["uavUuid"].toString();
         QString title = QString("%1 - %2")
                             .arg(startTime.toString("dd.MM.yyyy(hh:mm:ss)"))
                             .arg(endTime.toString("dd.MM.yyyy(hh:mm:ss)"));
         QString description = QString("%1(%2)").arg(model).arg(serialNumber);
-        Fact *request = new Fact(parent, uuid, title, description, Fact::NoFlags);
+        Fact *request = nullptr;
+        if(status == "APPROVED") {
+            auto approvedRequest = new FlightRequestApproved(f_approved, uuid, title, model, serialNumber,
+                                                             startTime.toString("dd.MM.yyyy(hh:mm:ss)"),
+                                                             endTime.toString("dd.MM.yyyy(hh:mm:ss)"), uavUuid);
+            connect(approvedRequest, &FlightRequestApproved::workStarted, this, &FlightRequests::workStarted);
+            request = approvedRequest;
+
+        } else if(status == "DECLINED") {
+            request = new Fact(f_declined, uuid, title, description, Fact::NoFlags);
+        } else {
+            request = new Fact(f_pending, uuid, title, description, Fact::NoFlags);
+        }
         f_requests.append(request);
     }
     f_approved->setValue(QString("%1").arg(f_approved->facts().size()));

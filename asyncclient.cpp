@@ -7,6 +7,19 @@
 #include "Mission/Waypoint.h"
 #include "App/AppLog.h"
 
+DiginavisAuthenticator::DiginavisAuthenticator(const std::string &token):
+    m_token(token)
+{
+}
+
+grpc::Status DiginavisAuthenticator::GetMetadata(grpc::string_ref service_url, grpc::string_ref method_name,
+                                                 const grpc::AuthContext &channel_auth_context,
+                                                 std::multimap<grpc::string, grpc::string> *metadata)
+{
+    metadata->insert(std::make_pair("authorization", "Bearer " + m_token));
+    return grpc::Status::OK;
+}
+
 Tracker::Tracker(std::shared_ptr<grpc::Channel> channel):
     m_stub(TrackingService::NewStub(channel)),
     m_writer(m_stub->receive(&m_clientContext, &m_empty))
@@ -152,6 +165,18 @@ bool AsyncClient::isConnected() const
     return m_isConnected;
 }
 
+void AsyncClient::setBearerToken(const QString &token)
+{
+    std::unique_lock locker(m_ioMutex);
+    m_bearerToken = token;
+}
+
+QString AsyncClient::getBearerToken() const
+{
+    std::unique_lock locker(m_ioMutex);
+    return m_bearerToken;
+}
+
 void AsyncClient::setIsConnected(bool b)
 {
     if(m_isConnected != b) {
@@ -242,14 +267,17 @@ void AsyncClient::run()
         grpc::ChannelArguments args;
         args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, 5000);
         args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 5000);
-        auto channel = grpc::CreateCustomChannel(m_host.toStdString(), grpc::InsecureChannelCredentials(), args);
+        auto call_creds = grpc::MetadataCredentialsFromPlugin(
+            std::unique_ptr<grpc::MetadataCredentialsPlugin>(
+                new DiginavisAuthenticator(m_bearerToken.toStdString())));
+        auto channel_creds = grpc::SslCredentials(grpc::SslCredentialsOptions());
+        auto creds = grpc::CompositeChannelCredentials(channel_creds, call_creds);
+        auto channel = grpc::CreateCustomChannel(m_host.toStdString(), creds, args);
         if(channel) {
             QElapsedTimer syncPoint;
             syncPoint.start();
             auto deadline = gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_seconds(2, GPR_TIMESPAN));
-            std::cout << m_host.toStdString() << std::endl;
             if(channel->WaitForConnected(deadline)) {
-                std::cout << "Connected" << std::endl;
                 setIsConnected(true);
                 auto tracker = std::make_unique<Tracker>(channel);
                 tracker->setMissionUuid(getMissionUuid());

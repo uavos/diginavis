@@ -10,6 +10,19 @@
 
 using namespace avtm::center::proto;
 
+class DiginavisAuthenticator: public grpc::MetadataCredentialsPlugin
+{
+public:
+    DiginavisAuthenticator(const grpc::string &token);
+
+    grpc::Status GetMetadata(grpc::string_ref service_url, grpc::string_ref method_name,
+                             const grpc::AuthContext &channel_auth_context,
+                             std::multimap<grpc::string, grpc::string> *metadata) override;
+
+private:
+    grpc::string m_token;
+};
+
 class Tracker
 {
 public:
@@ -62,6 +75,8 @@ public:
     QString getFlightRequestUuid() const;
     void setFlightRequestUuid(const QString &uuid);
     bool isConnected() const;
+    void setBearerToken(const QString &token);
+    QString getBearerToken() const;
     QString getHost() const;
     QString getMissionUuid() const;
     Status getStatus() const;
@@ -77,10 +92,11 @@ private:
         RegisterMission,
         UpdateMission
     };
-    const QString m_host = "winavis.project-one.io:6565";
+    const QString m_host = "winavis.project-one.io:443";
     QString m_droneUuid;
     QString m_flightRequestUuid;
     QString m_missionUuid;
+    QString m_bearerToken;
     std::atomic_bool m_stop{false};
     std::atomic_bool m_isConnected{false};
     std::queue<int> m_tasks;

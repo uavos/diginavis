@@ -15,9 +15,12 @@ public:
 
     Fact *f_refresh;
 
-    QVector<Fact*> f_requests;
+    QVector<Fact *> f_requests;
 
 private slots:
     void onTriggered();
     void onRequestFinished(QNetworkReply *reply) override;
+
+signals:
+    void workStarted(const QString &requestUuid, const QString &droneUuid);
 };

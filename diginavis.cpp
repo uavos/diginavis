@@ -27,8 +27,12 @@ Diginavis::Diginavis(Fact *parent):
     connect(f_authorization, &Authorization::bearerTokenReceived, f_drones, &Drones::setBearerToken);
     connect(f_authorization, &Authorization::bearerTokenReceived, f_requestCreator, &FlightRequestCreator::setBearerToken);
     connect(f_authorization, &Authorization::bearerTokenReceived, f_requests, &FlightRequests::setBearerToken);
+    connect(f_authorization, &Authorization::bearerTokenReceived, f_telemetry, &Telemetry::setBearerToken);
     f_droneCreator->setBearerToken(f_authorization->getBearerToken());
     f_drones->setBearerToken(f_authorization->getBearerToken());
     f_requests->setBearerToken(f_authorization->getBearerToken());
     f_requestCreator->setBearerToken(f_authorization->getBearerToken());
+    f_telemetry->setBearerToken(f_authorization->getBearerToken());
+
+    connect(f_requests, &FlightRequests::workStarted, f_telemetry, &Telemetry::startWork);
 }

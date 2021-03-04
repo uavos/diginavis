@@ -15,11 +15,18 @@ Telemetry::Telemetry(Fact *parent):
     f_lastSync->setIcon("sync");
     f_lastSync->setValue("N/A");
 
-    m_client.start();
-
     connect(&m_client, &AsyncClient::isConnectedChanged, this, &Telemetry::onIsConnectedChanged);
     connect(&m_client, &AsyncClient::statusChanged, this, &Telemetry::onStatusChanged);
     connect(&m_client, &AsyncClient::trackerSynced, this, &Telemetry::onTrackerSynced);
+}
+
+void Telemetry::setBearerToken(const QString &token)
+{
+    if(!token.isEmpty()) {
+        m_client.setBearerToken(token);
+        if(!m_client.isRunning())
+            m_client.start();
+    }
 }
 
 Telemetry::~Telemetry()
@@ -69,4 +76,12 @@ void Telemetry::updateValue()
         value = "Connected, " + f_status->value().toString();
     else
         value = "Disconnected";
+    setValue(value);
+}
+
+void Telemetry::startWork(const QString &requestUuid, const QString &droneUuid)
+{
+    m_client.setFlightRequestUuid(requestUuid);
+    m_client.setDroneUuid(droneUuid);
+    m_client.registerMission();
 }
