@@ -5,7 +5,7 @@ DroneCreator::DroneCreator(Fact *parent):
 {
     f_serialNumber = new Fact(this, "serial_number", "Serial number", "", Fact::Text);
     f_type = new Fact(this, "type", "Type", "", Fact::Text);
-    f_model = new Fact(this, "model", "Model", "", Fact::Text);
+    f_model = new Fact(this, "model_", "Model", "", Fact::Text);
     f_engineCount = new Fact(this, "engine_count", "Engine count", "", Fact::Int);
     f_engineCount->setMin(0);
     f_engineType = new Fact(this, "engine_type", "Engine type", "", Fact::Enum);
@@ -34,7 +34,6 @@ void DroneCreator::onTriggered()
 
 void DroneCreator::onCreateTriggered()
 {
-
     QJsonObject root;
     QJsonObject applicant;
     applicant["firstName"] = QString("Никита");
@@ -75,9 +74,11 @@ void DroneCreator::onRequestFinished(QNetworkReply *reply)
 {
     QByteArray data = reply->readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
-    QString uavUuid = doc.object()["data"].toObject()["uav"].toObject()["uavUuid"].toString();
-    if(uavUuid.isEmpty())
+    QString uavUuid = doc.object()["data"].toString();
+    if(uavUuid.isEmpty()) {
+        qDebug() << data;
         f_createStatus->setTitle("FAIL");
+    }
     else
         f_createStatus->setTitle("Success. Please wait for moderator response.");
 }

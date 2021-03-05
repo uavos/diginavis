@@ -24,6 +24,7 @@ Tracker::Tracker(std::shared_ptr<grpc::Channel> channel):
     m_stub(TrackingService::NewStub(channel)),
     m_writer(m_stub->receive(&m_clientContext, &m_empty))
 {
+    m_clientContext.set_deadline(gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_millis(500, GPR_TIMESPAN)));
 }
 
 bool Tracker::write(float altitude, float latitude, float longitude, float gspeed, uint64_t ts)
@@ -32,8 +33,6 @@ bool Tracker::write(float altitude, float latitude, float longitude, float gspee
     auto secs = std::chrono::duration_cast<std::chrono::seconds>(msecs);
     auto nsecs = std::chrono::nanoseconds(msecs) - std::chrono::nanoseconds(secs);
 
-    grpc::ClientContext clientContext;
-    clientContext.set_deadline(gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_millis(500, GPR_TIMESPAN)));
     TrackingRequest request;
     request.mutable_point()->set_altitude(altitude);
     request.mutable_point()->set_latitude(latitude);

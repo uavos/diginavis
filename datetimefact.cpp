@@ -4,17 +4,19 @@ DateTimeFact::DateTimeFact(Fact *parent,
                            const QString &name,
                            const QString &title,
                            const QString &descr,
-                           const QString &icon):
-    Fact(parent, name, title, descr, Fact::Group, icon)
+                           const QString &icon,
+                           qint64 autoAddSecs):
+    Fact(parent, name, title, descr, Fact::Group, icon),
+    m_autoAddSecs(autoAddSecs)
 {
     f_year = new Fact(this, "year", "Year", "", Fact::Int);
-    f_year->setMin(QDate::currentDate().year());
+    f_year->setMin(QDateTime::currentDateTime().toUTC().date().year());
 
     f_month = new Fact(this, "month", "Month", "", Fact::Int);
-    f_month->setMin(QDate::currentDate().month());
+    f_month->setMin(QDateTime::currentDateTime().toUTC().date().month());
 
     f_day = new Fact(this, "day", "Day", "", Fact::Int);
-    f_day->setMin(QDate::currentDate().day());
+    f_day->setMin(QDateTime::currentDateTime().toUTC().date().day());
 
     f_hour = new Fact(this, "hour", "Hour", "", Fact::Int);
     f_hour->setMin(0);
@@ -48,7 +50,7 @@ void DateTimeFact::setDateTime(const QDateTime &dateTime)
 
 void DateTimeFact::onTriggered()
 {
-    QDateTime next = QDateTime::currentDateTime().addSecs(5 * 60);
+    QDateTime next = QDateTime::currentDateTime().toUTC().addSecs(m_autoAddSecs);
     setDateTime(next);
 }
 

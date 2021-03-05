@@ -12,10 +12,8 @@ FlightRequestCreator::FlightRequestCreator(Fact *parent):
     HttpApiBase(parent, "create_request", "Create", "", Fact::Group, "plus-circle-outline")
 {
     f_drones = new Fact(this, "drones", "Drone", "Choose your drone", Fact::Enum, "airplane");
-    f_startDateTime = new DateTimeFact(this, "start_date_time", "Start date time", "", "airplane-takeoff");
-    f_startDateTime->setValue("2021-09-13T13:22:15.303Z");
-    f_endDateTime = new DateTimeFact(this, "end_date_time", "End date time", "", "airplane-landing");
-    f_endDateTime->setValue("2021-09-15T13:22:15.303Z");
+    f_startDateTime = new DateTimeFact(this, "start_date_time", "Start date time (UTC)", "", "airplane-takeoff", 5 * 60);
+    f_endDateTime = new DateTimeFact(this, "end_date_time", "End date time (UTC)", "", "airplane-landing", 5 * 60 + 60 * 60 * 3);
     f_missionSize = new Fact(this, "mission_size", "Mission size", "", Fact::NoFlags, "earth");
     f_missionSize->setValue(0);
 
@@ -33,16 +31,22 @@ void FlightRequestCreator::onRequestFinished(QNetworkReply *reply)
 {
     QByteArray data = reply->readAll();
     QJsonDocument doc = QJsonDocument::fromJson(data);
-    QString flightRequetsUuid = doc.object()["data"].toObject()["flightRequestUuid"].toString();
-    if(flightRequetsUuid.isEmpty())
+    QString flightRequetsUuid = doc.object()["data"].toString();
+    if(flightRequetsUuid.isEmpty()) {
+        qDebug() << data;
         f_createStatus->setTitle("FAIL");
-    else
+    } else
         f_createStatus->setTitle("Success. Please wait for moderator response.");
 }
 
 void FlightRequestCreator::onTriggered()
 {
-    f_createStatus->setVisible(false);
+    for(auto f: facts())
+        if(f != f_createStatus)
+            f->setVisible(true);
+        else
+            f->setVisible(false);
+    f_createButton->setVisible(true);
     m_drones.setBearerToken(getBearerToken());
     m_drones.request();
 }
@@ -65,14 +69,11 @@ void FlightRequestCreator::onCreateTriggered()
     for(int i = 0; i < waypoints->size(); i++) {
         auto waypoint = dynamic_cast<Waypoint *>(waypoints->child(i));
         if(waypoint) {
-            QJsonArray array;
-            array.append(waypoint->f_latitude->value().toFloat());
-            array.append(waypoint->f_longitude->value().toFloat());
             auto altitude = waypoint->f_altitude->value().toFloat();
             if(altitude > maxAltitude)
                 maxAltitude = altitude;
-            polygon.addCoordinate(QGeoCoordinate(waypoint->f_latitude->value().toFloat(),
-                                                 waypoint->f_longitude->value().toFloat()));
+            polygon.addCoordinate(QGeoCoordinate(waypoint->f_longitude->value().toFloat(),
+                                                 waypoint->f_latitude->value().toFloat()));
         }
     }
     auto geoRect = polygon.boundingGeoRectangle();
@@ -87,10 +88,12 @@ void FlightRequestCreator::onCreateTriggered()
     flightplan["geometry"] = geometry1;
     flightplan["maxAltitudeAgl"] = maxAltitude;
     flightplan["zonalAreaCode"] = "A54618";
-    flightplan["scheduledDateTimeStart"] = f_startDateTime->getDateTime().toString("yyyy-MM-ddThh:mm:ss.zzzZ");
-    flightplan["scheduledDateTimeEnd"] = f_endDateTime->getDateTime().toString("yyyy-MM-ddThh:mm:ss.zzzZ");
-    flightplan["reserveDateTimeStart"] = f_startDateTime->getDateTime().toString("yyyy-MM-ddThh:mm:ss.zzzZ");
-    flightplan["reserveDateTimeEnd"] = f_endDateTime->getDateTime().toString("yyyy-MM-ddThh:mm:ss.zzzZ");
+    auto startDateTime = f_startDateTime->getDateTime();
+    auto endDateTime = f_endDateTime->getDateTime();
+    flightplan["scheduledDateTimeStart"] = startDateTime.toString("yyyy-MM-ddThh:mm:ss.zzzZ");
+    flightplan["scheduledDateTimeEnd"] = endDateTime.toString("yyyy-MM-ddThh:mm:ss.zzzZ");
+    flightplan["reserveDateTimeStart"] = startDateTime.toString("yyyy-MM-ddThh:mm:ss.zzzZ");
+    flightplan["reserveDateTimeEnd"] = endDateTime.toString("yyyy-MM-ddThh:mm:ss.zzzZ");
     flightplan["location"] = "Russia";
     flightplan["supervisorName"] = "Dispatcher";
     QJsonObject pilot;

@@ -15,6 +15,7 @@ public:
                           const QString &endTime,
                           const QString &droneUuid);
 
+    Fact *f_uuid;
     Fact *f_model;
     Fact *f_serialNumber;
     Fact *f_startTime;
@@ -23,7 +24,6 @@ public:
     Fact *f_startWork;
 
 private:
-    QString m_requestUuid;
     QString m_droneUuid;
 
 private slots:

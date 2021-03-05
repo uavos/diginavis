@@ -10,7 +10,8 @@ public:
                  const QString &name = QString(),
                  const QString &title = QString(),
                  const QString &descr = QString(),
-                 const QString &icon = QString());
+                 const QString &icon = QString(),
+                 qint64 autoAddSecs = 0);
 
     QDateTime getDateTime() const;
     void setDateTime(const QDateTime &dateTime);
@@ -20,6 +21,9 @@ public:
     Fact *f_day;
     Fact *f_hour;
     Fact *f_minutes;
+
+private:
+    qint64 m_autoAddSecs = 0;
 
 private slots:
     void onTriggered();

@@ -9,10 +9,11 @@ FlightRequestApproved::FlightRequestApproved(Fact *parent,
                                              const QString &endTime,
                                              const QString &droneUuid):
     Fact(parent, name, title, QString("%1 (%2)").arg(model).arg(serialNumber), Fact::Group),
-    m_requestUuid(name),
     m_droneUuid(droneUuid)
 {
-    f_model = new Fact(this, "model", "Model", "", Fact::NoFlags);
+    f_uuid = new Fact(this, "uuid", "UUID", "", Fact::NoFlags);
+    f_uuid->setValue(name);
+    f_model = new Fact(this, "model_", "Model", "", Fact::NoFlags);
     f_model->setValue(model);
     f_serialNumber = new Fact(this, "serial_number", "Serial number", "", Fact::NoFlags);
     f_serialNumber->setValue(serialNumber);
@@ -27,5 +28,5 @@ FlightRequestApproved::FlightRequestApproved(Fact *parent,
 
 void FlightRequestApproved::onStartWorkTriggered()
 {
-    emit workStarted(m_requestUuid, m_droneUuid);
+    emit workStarted(f_uuid->value().toString(), m_droneUuid);
 }

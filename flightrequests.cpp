@@ -31,14 +31,14 @@ void FlightRequests::onRequestFinished(QNetworkReply *reply)
     auto array = doc.object()["data"].toArray();
     for(auto flight: array) {
         auto flightplan = flight.toObject()["flightPlan"].toObject();
-        QString uuid = flightplan["flightPlanUuid"].toString();
         QDateTime startTime = QDateTime::fromString(flightplan["scheduledDateTimeStart"].toString(), Qt::ISODate);
         QDateTime endTime = QDateTime::fromString(flightplan["scheduledDateTimeEnd"].toString(), Qt::ISODate);
-        QString status = flight.toObject()["processingStatus"].toString();
         auto uav = flightplan["uavs"].toArray().first().toObject();
         QString model = uav["model"].toString();
         QString serialNumber = uav["serialNumber"].toString();
         QString uavUuid = uav["uavUuid"].toString();
+        QString status = flight.toObject()["processingStatus"].toString();
+        QString uuid = flight.toObject()["flightRequestUuid"].toString();
         QString title = QString("%1 - %2")
                             .arg(startTime.toString("dd.MM.yyyy(hh:mm:ss)"))
                             .arg(endTime.toString("dd.MM.yyyy(hh:mm:ss)"));
