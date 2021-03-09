@@ -1,6 +1,5 @@
 #include "authorization.h"
 
-#include <QDebug>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
@@ -25,10 +24,12 @@ void Authorization::requestBearerToken()
 {
     QNetworkRequest request(URL);
     request.setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    QString body = "grant_type=client_credentials"
-                   "&scope=openid"
-                   "&client_id=client_app_5b88c43f-6376-41b0-ab04-172ebaf0efa2"
-                   "&client_secret=3720d4d9-ff62-40e3-85bb-9e70bb8276f8";
+    QString body = QString("grant_type=client_credentials"
+                           "&scope=openid"
+                           "&client_id=%1"
+                           "&client_secret=%2")
+                       .arg(CLIENT_ID)
+                       .arg(CLIENT_SECRET);
     m_manager.post(request, body.toUtf8());
 }
 

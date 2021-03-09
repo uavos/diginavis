@@ -9,7 +9,8 @@ class DroneCreator: public HttpApiBase
 {
     Q_OBJECT
 public:
-    const QString URL = "https://project-one.io/api/uav-accountings";
+    const QString URL = "https://project-one.io/api/v1/uav-accountings";
+    // const QString URL = "https://project-one.io/api/v1/uav-accountings/auto";
     DroneCreator(Fact *parent = nullptr);
 
     Fact *f_serialNumber;

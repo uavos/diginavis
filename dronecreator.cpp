@@ -1,5 +1,7 @@
 #include "dronecreator.h"
 
+#include "App/AppLog.h"
+
 DroneCreator::DroneCreator(Fact *parent):
     HttpApiBase(parent, "create_drone", "Create drone", "", FactBase::Section, "plus-circle-outline")
 {
@@ -76,7 +78,7 @@ void DroneCreator::onRequestFinished(QNetworkReply *reply)
     QJsonDocument doc = QJsonDocument::fromJson(data);
     QString uavUuid = doc.object()["data"].toString();
     if(uavUuid.isEmpty()) {
-        qDebug() << data;
+        apxMsgW() << "Diginavis: " << QString::fromUtf8(data);
         f_createStatus->setTitle("FAIL");
     }
     else

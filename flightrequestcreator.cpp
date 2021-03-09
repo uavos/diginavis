@@ -7,6 +7,7 @@
 #include "Vehicles/Vehicle.h"
 #include "Mission/VehicleMission.h"
 #include "Mission/Waypoint.h"
+#include "App/AppLog.h"
 
 FlightRequestCreator::FlightRequestCreator(Fact *parent):
     HttpApiBase(parent, "create_request", "Create", "", Fact::Group, "plus-circle-outline")
@@ -33,7 +34,7 @@ void FlightRequestCreator::onRequestFinished(QNetworkReply *reply)
     QJsonDocument doc = QJsonDocument::fromJson(data);
     QString flightRequetsUuid = doc.object()["data"].toString();
     if(flightRequetsUuid.isEmpty()) {
-        qDebug() << data;
+        apxMsgW() << "Diginavis: " << QString::fromUtf8(data);
         f_createStatus->setTitle("FAIL");
     } else
         f_createStatus->setTitle("Success. Please wait for moderator response.");

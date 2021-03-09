@@ -10,28 +10,16 @@
 
 using namespace avtm::center::proto;
 
-class DiginavisAuthenticator: public grpc::MetadataCredentialsPlugin
-{
-public:
-    DiginavisAuthenticator(const grpc::string &token);
-
-    grpc::Status GetMetadata(grpc::string_ref service_url, grpc::string_ref method_name,
-                             const grpc::AuthContext &channel_auth_context,
-                             std::multimap<grpc::string, grpc::string> *metadata) override;
-
-private:
-    grpc::string m_token;
-};
-
 class Tracker
 {
 public:
-    Tracker(std::shared_ptr<grpc::Channel> channel);
+    Tracker(std::shared_ptr<grpc::Channel> channel, const QString &bearerToken);
     bool write(float altitude, float latitude, float longitude, float gspeed, uint64_t ts);
     void setMissionUuid(const QString &uuid);
     ~Tracker();
 
 private:
+    QString m_bearerToken;
     QString m_missionUuid;
     grpc::ClientContext m_clientContext;
     std::unique_ptr<TrackingService::Stub> m_stub;
@@ -42,7 +30,7 @@ private:
 class Registrator
 {
 public:
-    Registrator(std::shared_ptr<grpc::Channel> channel);
+    Registrator(std::shared_ptr<grpc::Channel> channel, const QString &bearerToken);
 
     std::optional<QString> registerMission();
     void setDroneUuid(const QString &uuid);
@@ -51,6 +39,7 @@ public:
     bool updateStatus(const QString &missionUuid, MissionStatus status);
 
 private:
+    QString m_bearerToken;
     QString m_droneUuid;
     QString m_flightRequestUuid;
     std::unique_ptr<MissionService::Stub> m_stub;
@@ -74,12 +63,12 @@ public:
     void setDroneUuid(const QString &uuid);
     QString getFlightRequestUuid() const;
     void setFlightRequestUuid(const QString &uuid);
-    bool isConnected() const;
     void setBearerToken(const QString &token);
     QString getBearerToken() const;
     QString getHost() const;
     QString getMissionUuid() const;
     Status getStatus() const;
+    bool isConnected() const;
 
     void registerMission();
     void updateMission();
@@ -92,7 +81,8 @@ private:
         RegisterMission,
         UpdateMission
     };
-    const QString m_host = "winavis.project-one.io:443";
+    // const QString m_host = "winavis.project-one.io:433";
+    const QString m_host = "winavis.project-one.io:6565";
     QString m_droneUuid;
     QString m_flightRequestUuid;
     QString m_missionUuid;

@@ -1,7 +1,5 @@
 #include "diginavis.h"
 
-#include <QDebug>
-
 #include "Vehicles/Vehicles.h"
 #include "Mission/VehicleMission.h"
 

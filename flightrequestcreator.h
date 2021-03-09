@@ -8,7 +8,8 @@ class FlightRequestCreator: public HttpApiBase
 {
     Q_OBJECT
 public:
-    const QString URL = "https://project-one.io/api/flight-requests";
+    const QString URL = "https://project-one.io/api/v1/flight-requests";
+    // const QString URL = "https://project-one.io/api/v1/flight-requests/auto";
     FlightRequestCreator(Fact *parent = nullptr);
 
     Fact *f_drones;

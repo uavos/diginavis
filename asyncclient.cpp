@@ -7,23 +7,12 @@
 #include "Mission/Waypoint.h"
 #include "App/AppLog.h"
 
-DiginavisAuthenticator::DiginavisAuthenticator(const std::string &token):
-    m_token(token)
+Tracker::Tracker(std::shared_ptr<grpc::Channel> channel, const QString &bearerToken):
+    m_bearerToken(bearerToken),
+    m_stub(TrackingService::NewStub(channel))
 {
-}
-
-grpc::Status DiginavisAuthenticator::GetMetadata(grpc::string_ref service_url, grpc::string_ref method_name,
-                                                 const grpc::AuthContext &channel_auth_context,
-                                                 std::multimap<grpc::string, grpc::string> *metadata)
-{
-    metadata->insert(std::make_pair("authorization", "Bearer " + m_token));
-    return grpc::Status::OK;
-}
-
-Tracker::Tracker(std::shared_ptr<grpc::Channel> channel):
-    m_stub(TrackingService::NewStub(channel)),
-    m_writer(m_stub->receive(&m_clientContext, &m_empty))
-{
+    m_clientContext.AddMetadata("authorization", "Bearer " + m_bearerToken.toStdString());
+    m_writer = m_stub->receive(&m_clientContext, &m_empty);
     m_clientContext.set_deadline(gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_millis(500, GPR_TIMESPAN)));
 }
 
@@ -61,7 +50,8 @@ Tracker::~Tracker()
     m_writer->Finish();
 }
 
-Registrator::Registrator(std::shared_ptr<grpc::Channel> channel):
+Registrator::Registrator(std::shared_ptr<grpc::Channel> channel, const QString &bearerToken):
+    m_bearerToken(bearerToken),
     m_stub(MissionService::NewStub(channel))
 {
 }
@@ -79,6 +69,7 @@ void Registrator::setFlightRequestUuid(const QString &uuid)
 std::optional<QString> Registrator::registerMission()
 {
     grpc::ClientContext clientContext;
+    clientContext.AddMetadata("authorization", "Bearer " + m_bearerToken.toStdString());
     clientContext.set_deadline(gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_millis(3000, GPR_TIMESPAN)));
     MissionRequest request;
     MissionResponse response;
@@ -111,6 +102,7 @@ std::optional<QString> Registrator::registerMission()
 void Registrator::updateMission(const QString &missionUuid)
 {
     grpc::ClientContext clientContext;
+    clientContext.AddMetadata("authorization", "Bearer " + m_bearerToken.toStdString());
     clientContext.set_deadline(gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_millis(3000, GPR_TIMESPAN)));
     MissionUpdateStatusAndCoordinatesRequest request;
     Empty response;
@@ -135,6 +127,7 @@ void Registrator::updateMission(const QString &missionUuid)
 bool Registrator::updateStatus(const QString &missionUuid, MissionStatus status)
 {
     grpc::ClientContext clientContext;
+    clientContext.AddMetadata("authorization", "Bearer " + m_bearerToken.toStdString());
     clientContext.set_deadline(gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_millis(3000, GPR_TIMESPAN)));
     MissionUpdateStatusRequest request;
     Empty response;
@@ -266,11 +259,8 @@ void AsyncClient::run()
         grpc::ChannelArguments args;
         args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, 5000);
         args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 5000);
-        auto call_creds = grpc::MetadataCredentialsFromPlugin(
-            std::unique_ptr<grpc::MetadataCredentialsPlugin>(
-                new DiginavisAuthenticator(m_bearerToken.toStdString())));
-        auto channel_creds = grpc::SslCredentials(grpc::SslCredentialsOptions());
-        auto creds = grpc::CompositeChannelCredentials(channel_creds, call_creds);
+        // auto creds = grpc::SslCredentials(grpc::SslCredentialsOptions());
+        auto creds = grpc::InsecureChannelCredentials();
         auto channel = grpc::CreateCustomChannel(m_host.toStdString(), creds, args);
         if(channel) {
             QElapsedTimer syncPoint;
@@ -278,9 +268,9 @@ void AsyncClient::run()
             auto deadline = gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_seconds(2, GPR_TIMESPAN));
             if(channel->WaitForConnected(deadline)) {
                 setIsConnected(true);
-                auto tracker = std::make_unique<Tracker>(channel);
+                auto tracker = std::make_unique<Tracker>(channel, getBearerToken());
                 tracker->setMissionUuid(getMissionUuid());
-                auto registrator = std::make_unique<Registrator>(channel);
+                auto registrator = std::make_unique<Registrator>(channel, getBearerToken());
 
                 while(!m_stop) {
                     auto task = getTask();
@@ -331,14 +321,15 @@ void AsyncClient::run()
                         }
                     }
 
-                    if(channel->GetState(true) != GRPC_CHANNEL_READY) {
+                    auto state = channel->GetState(true);
+                    if(state != GRPC_CHANNEL_READY) {
                         apxMsgW() << "Diginavis: Lost connection";
                         break;
                     }
                     msleep(1);
                 }
             } else {
-                std::cout << "Not connected" << std::endl;
+                apxMsgW() << "Diginavis: Not connected";
             }
         } else
             apxMsgW() << "Diginavis: Can't create channel";
