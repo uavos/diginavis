@@ -78,6 +78,8 @@ void FlightRequestCreator::onCreateTriggered()
         }
     }
     auto geoRect = polygon.boundingGeoRectangle();
+    geoRect.setTopLeft(geoRect.topLeft().atDistanceAndAzimuth(1000, 315));
+    geoRect.setBottomRight(geoRect.bottomRight().atDistanceAndAzimuth(1000, 135));
     coordinates2.append(QJsonArray({geoRect.topLeft().latitude(), geoRect.topLeft().longitude()}));
     coordinates2.append(QJsonArray({geoRect.topRight().latitude(), geoRect.topRight().longitude()}));
     coordinates2.append(QJsonArray({geoRect.bottomRight().latitude(), geoRect.bottomRight().longitude()}));
