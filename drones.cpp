@@ -7,7 +7,8 @@ Drones::Drones(Fact *parent):
 {
     f_refresh = new Fact(this, "refresh", "Refresh", "", Fact::Action | Fact::Apply, "refresh");
 
-    connect(parent, &Fact::triggered, this, &Drones::onTriggered);
+    if(parent)
+        connect(parent, &Fact::triggered, this, &Drones::onTriggered);
     connect(f_refresh, &Fact::triggered, this, &Drones::onTriggered);
 }
 
@@ -28,7 +29,7 @@ void Drones::onJsonReceived(const QJsonDocument &doc)
     qDeleteAll(f_drones);
     f_drones.clear();
     App::jsync(this);
-    
+
     auto uavs = doc.object()["data"].toArray();
     for(auto uavref: uavs) {
         auto uav = uavref.toObject();
