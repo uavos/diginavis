@@ -19,6 +19,9 @@ public:
     Fact *f_createStatus;
     Fact *f_missionSize;
 
+protected:
+    void onJsonReceived(const QJsonDocument &doc) override;
+
 private:
     Drones m_drones;
 
@@ -27,5 +30,4 @@ private slots:
     void onCreateTriggered();
     void onDronesReceived();
     void onMissionSizeChanged();
-    void onRequestFinished(QNetworkReply *reply);
 };

@@ -28,13 +28,11 @@ FlightRequestCreator::FlightRequestCreator(Fact *parent):
     connect(mission, &VehicleMission::missionSizeChanged, this, &FlightRequestCreator::onMissionSizeChanged);
 }
 
-void FlightRequestCreator::onRequestFinished(QNetworkReply *reply)
+void FlightRequestCreator::onJsonReceived(const QJsonDocument &doc)
 {
-    QByteArray data = reply->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(data);
     QString flightRequetsUuid = doc.object()["data"].toString();
     if(flightRequetsUuid.isEmpty()) {
-        apxMsgW() << "Diginavis: " << QString::fromUtf8(data);
+        apxMsgW() << "Diginavis: " << QString::fromUtf8(doc.toJson());
         f_createStatus->setTitle("FAIL");
     } else
         f_createStatus->setTitle("Success. Please wait for moderator response.");

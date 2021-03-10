@@ -22,12 +22,12 @@ void FlightRequests::onTriggered()
     m_network.get(request);
 }
 
-void FlightRequests::onRequestFinished(QNetworkReply *reply)
+void FlightRequests::onJsonReceived(const QJsonDocument &doc)
 {
     qDeleteAll(f_requests);
     f_requests.clear();
+    App::jsync(this);
 
-    QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
     auto array = doc.object()["data"].toArray();
     for(auto flight: array) {
         auto flightplan = flight.toObject()["flightPlan"].toObject();

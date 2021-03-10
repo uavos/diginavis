@@ -17,9 +17,11 @@ public:
 
     void request();
 
+protected:
+    void onJsonReceived(const QJsonDocument &doc) override;
+
 private slots:
     void onTriggered();
-    void onRequestFinished(QNetworkReply *reply) override;
 
 signals:
     void dronesReceived();

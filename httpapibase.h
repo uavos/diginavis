@@ -21,9 +21,10 @@ public:
 protected:
     QNetworkAccessManager m_network;
     QNetworkRequest makeRequest(const QString &url, const QString &contentType = "application/json");
+    virtual void onJsonReceived(const QJsonDocument &doc) = 0;
 
 protected slots:
-    virtual void onRequestFinished(QNetworkReply *reply) = 0;
+    void onRequestFinished(QNetworkReply *reply);
 
 private:
     QString m_bearerToken;

@@ -23,12 +23,12 @@ void Drones::request()
     m_network.get(request);
 }
 
-void Drones::onRequestFinished(QNetworkReply *reply)
+void Drones::onJsonReceived(const QJsonDocument &doc)
 {
     qDeleteAll(f_drones);
     f_drones.clear();
     App::jsync(this);
-    QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+    
     auto uavs = doc.object()["data"].toArray();
     for(auto uavref: uavs) {
         auto uav = uavref.toObject();

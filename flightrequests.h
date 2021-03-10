@@ -19,7 +19,7 @@ public:
 
 private slots:
     void onTriggered();
-    void onRequestFinished(QNetworkReply *reply) override;
+    void onJsonReceived(const QJsonDocument &doc) override;
 
 signals:
     void workStarted(const QString &requestUuid, const QString &droneUuid);

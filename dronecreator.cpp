@@ -72,13 +72,11 @@ void DroneCreator::onCreateTriggered()
     f_createButton->setVisible(false);
 }
 
-void DroneCreator::onRequestFinished(QNetworkReply *reply)
+void DroneCreator::onJsonReceived(const QJsonDocument &doc)
 {
-    QByteArray data = reply->readAll();
-    QJsonDocument doc = QJsonDocument::fromJson(data);
     QString uavUuid = doc.object()["data"].toString();
     if(uavUuid.isEmpty()) {
-        apxMsgW() << "Diginavis: " << QString::fromUtf8(data);
+        apxMsgW() << "Diginavis: " << QString::fromUtf8(doc.toJson());
         f_createStatus->setTitle("FAIL");
     }
     else

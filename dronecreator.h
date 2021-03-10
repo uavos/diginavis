@@ -24,8 +24,10 @@ public:
 
     Fact *f_createStatus;
 
+protected:
+    void onJsonReceived(const QJsonDocument &doc) override;
+
 private slots:
     void onTriggered();
     void onCreateTriggered();
-    void onRequestFinished(QNetworkReply *reply) override;
 };
