@@ -22,7 +22,7 @@ apx_inc = include_directories(join_paths(apx_sdk_inc, 'src/lib/ApxGcs'),
                               join_paths(apx_sdk_inc, 'shared'),
                               join_paths(apx_sdk_inc, 'shared/common'),
                               join_paths(apx_sdk_inc, 'shared/crc/include'),
-                              '/home/pavel/sources/apx-gcs/build/modules/shared.mandala/gensrc/')
+                              join_paths(apx_sdk_inc, 'build/modules/shared.mandala/gensrc/'))
 apx_sdk_lib = '/home/pavel/sources/apx-gcs/build/out/'
 apx_dep = [cpp.find_library('ApxCore', dirs: join_paths(apx_sdk_lib, 'lib')),
            cpp.find_library('ApxData', dirs: join_paths(apx_sdk_lib, 'lib')),
