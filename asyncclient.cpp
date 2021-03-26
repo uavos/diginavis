@@ -259,8 +259,8 @@ void AsyncClient::run()
         grpc::ChannelArguments args;
         args.SetInt(GRPC_ARG_KEEPALIVE_TIME_MS, 5000);
         args.SetInt(GRPC_ARG_KEEPALIVE_TIMEOUT_MS, 5000);
-        // auto creds = grpc::SslCredentials(grpc::SslCredentialsOptions());
-        auto creds = grpc::InsecureChannelCredentials();
+        auto creds = grpc::SslCredentials(grpc::SslCredentialsOptions());
+        // auto creds = grpc::InsecureChannelCredentials();
         auto channel = grpc::CreateCustomChannel(m_host.toStdString(), creds, args);
         if(channel) {
             QElapsedTimer syncPoint;

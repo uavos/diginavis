@@ -81,8 +81,8 @@ private:
         RegisterMission,
         UpdateMission
     };
-    // const QString m_host = "winavis.project-one.io:433";
-    const QString m_host = "winavis.project-one.io:6565";
+    const QString m_host = "winavis.project-one.io:443";
+    // const QString m_host = "winavis.project-one.io:6565";
     QString m_droneUuid;
     QString m_flightRequestUuid;
     QString m_missionUuid;
