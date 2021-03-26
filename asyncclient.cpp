@@ -321,8 +321,8 @@ void AsyncClient::run()
                         }
                     }
 
-                    auto state = channel->GetState(true);
-                    if(state != GRPC_CHANNEL_READY) {
+                    deadline = gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_seconds(2, GPR_TIMESPAN));
+                    if(!channel->WaitForConnected(deadline)) {
                         apxMsgW() << "Diginavis: Lost connection";
                         break;
                     }
