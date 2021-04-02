@@ -4,8 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "~/apx_sdk/include/**",
-                "~/Qt/5.14.0/gcc_64/include/**",
+                "~/sources/apx-gcs/**",
+                "~/Qt/**",
                 "/home/pavel/grpc_install/include/"
             ],
             "defines": [],
