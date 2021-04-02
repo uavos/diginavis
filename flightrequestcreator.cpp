@@ -13,8 +13,8 @@ FlightRequestCreator::FlightRequestCreator(Fact *parent):
     HttpApiBase(parent, "create_request", "Create", "", Fact::Group, "plus-circle-outline")
 {
     f_drones = new Fact(this, "drones", "Drone", "Choose your drone", Fact::Enum, "airplane");
-    f_startDateTime = new DateTimeFact(this, "start_date_time", "Start date time (UTC)", "", "airplane-takeoff", 5 * 60);
-    f_endDateTime = new DateTimeFact(this, "end_date_time", "End date time (UTC)", "", "airplane-landing", 5 * 60 + 60 * 60 * 3);
+    f_startDateTime = new DateTimeFact(this, "start_date_time", "Start date time (UTC)", "", "airplane-takeoff", 60);
+    f_endDateTime = new DateTimeFact(this, "end_date_time", "End date time (UTC)", "", "airplane-landing", 60 + 60 * 60 * 4);
     f_missionSize = new Fact(this, "mission_size", "Mission size", "", Fact::NoFlags, "earth");
     f_missionSize->setValue(0);
 
