@@ -53,10 +53,11 @@ void FlightRequests::onJsonReceived(const QJsonDocument &doc)
 
         } else if(status == "DECLINED") {
             request = new Fact(f_declined, uuid, title, description, Fact::NoFlags);
-        } else {
+        } else if(status == "CREATED") {
             request = new Fact(f_pending, uuid, title, description, Fact::NoFlags);
         }
-        f_requests.append(request);
+        if(request)
+            f_requests.append(request);
     }
     f_approved->setValue(QString("%1").arg(f_approved->facts().size()));
     f_pending->setValue(QString("%1").arg(f_pending->facts().size()));
