@@ -8,8 +8,10 @@ Authorization::Authorization(Fact *parent):
 {
     m_timer.setSingleShot(false);
     m_timer.setInterval(5000);
+    m_tokenExpireTimer.setSingleShot(true);
     connect(&m_manager, &QNetworkAccessManager::finished, this, &Authorization::onRequestFinished);
     connect(&m_timer, &QTimer::timeout, this, &Authorization::onTimerTimeout);
+    connect(&m_tokenExpireTimer, &QTimer::timeout, this, &Authorization::requestBearerToken);
     requestBearerToken();
     m_timer.start();
     setValue("Not authorized");
@@ -35,10 +37,13 @@ void Authorization::requestBearerToken()
 
 void Authorization::onRequestFinished(QNetworkReply *reply)
 {
-    QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
-    m_bearerToken = doc.object()["access_token"].toString();
+    auto doc = QJsonDocument::fromJson(reply->readAll());
+    auto root = doc.object();
+    int expiresSecs = root["expires_in"].toInt();
+    m_bearerToken = root["access_token"].toString();
     if(!m_bearerToken.isEmpty()) {
         setValue("OK");
+        m_tokenExpireTimer.start(std::clamp(expiresSecs, 10, expiresSecs - 10) * 1000);
         emit bearerTokenReceived(m_bearerToken);
     } else {
         setValue("Not authorized");

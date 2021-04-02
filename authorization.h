@@ -18,6 +18,7 @@ public:
 
 private:
     QTimer m_timer;
+    QTimer m_tokenExpireTimer;
     QString m_bearerToken;
     QNetworkAccessManager m_manager;
 

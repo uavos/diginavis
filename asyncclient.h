@@ -10,7 +10,18 @@
 
 using namespace avtm::center::proto;
 
-class Tracker
+class SecureService
+{
+public:
+    SecureService(const QString &bearerToken);
+    QString getBearerToken() const;
+    void setBearerToken(const QString &bearerToken);
+
+private:
+    QString m_bearerToken;
+};
+
+class Tracker: public SecureService
 {
 public:
     Tracker(std::shared_ptr<grpc::Channel> channel, const QString &bearerToken);
@@ -19,7 +30,6 @@ public:
     ~Tracker();
 
 private:
-    QString m_bearerToken;
     QString m_missionUuid;
     grpc::ClientContext m_clientContext;
     std::unique_ptr<TrackingService::Stub> m_stub;
@@ -27,21 +37,16 @@ private:
     Empty m_empty;
 };
 
-class Registrator
+class Registrator: public SecureService
 {
 public:
     Registrator(std::shared_ptr<grpc::Channel> channel, const QString &bearerToken);
 
-    std::optional<QString> registerMission();
-    void setDroneUuid(const QString &uuid);
-    void setFlightRequestUuid(const QString &uuid);
+    std::optional<QString> registerMission(const QString &droneUuid, const QString &flightRequestUuid);
     void updateMission(const QString &missionUuid);
     bool updateStatus(const QString &missionUuid, MissionStatus status);
 
 private:
-    QString m_bearerToken;
-    QString m_droneUuid;
-    QString m_flightRequestUuid;
     std::unique_ptr<MissionService::Stub> m_stub;
 };
 
@@ -96,6 +101,9 @@ private:
     void setIsConnected(bool b);
     void setMissionUuid(const QString &uuid);
     void setStatus(Status status);
+
+    std::unique_ptr<Tracker> createTracker(std::shared_ptr<grpc::Channel> channel) const;
+    std::unique_ptr<Registrator> createRegistrator(std::shared_ptr<grpc::Channel> channel) const;
 
     std::optional<int> getTask();
 

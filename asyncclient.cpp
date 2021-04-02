@@ -7,13 +7,28 @@
 #include "Mission/Waypoint.h"
 #include "App/AppLog.h"
 
+SecureService::SecureService(const QString &bearerToken):
+    m_bearerToken(bearerToken)
+{
+}
+
+QString SecureService::getBearerToken() const
+{
+    return m_bearerToken;
+}
+
+void SecureService::setBearerToken(const QString &bearerToken)
+{
+    m_bearerToken = bearerToken;
+}
+
 Tracker::Tracker(std::shared_ptr<grpc::Channel> channel, const QString &bearerToken):
-    m_bearerToken(bearerToken),
+    SecureService(bearerToken),
     m_stub(TrackingService::NewStub(channel))
 {
-    m_clientContext.AddMetadata("authorization", "Bearer " + m_bearerToken.toStdString());
-    m_writer = m_stub->receive(&m_clientContext, &m_empty);
+    m_clientContext.AddMetadata("authorization", "Bearer " + getBearerToken().toStdString());
     m_clientContext.set_deadline(gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_millis(500, GPR_TIMESPAN)));
+    m_writer = m_stub->receive(&m_clientContext, &m_empty);
 }
 
 bool Tracker::write(float altitude, float latitude, float longitude, float gspeed, uint64_t ts)
@@ -30,7 +45,6 @@ bool Tracker::write(float altitude, float latitude, float longitude, float gspee
     request.mutable_time()->set_seconds(secs.count());
     request.mutable_time()->set_nanos(nsecs.count());
     request.set_mission_uuid(m_missionUuid.toStdString());
-
     if(m_writer->Write(request)) {
         return true;
     } else {
@@ -51,30 +65,20 @@ Tracker::~Tracker()
 }
 
 Registrator::Registrator(std::shared_ptr<grpc::Channel> channel, const QString &bearerToken):
-    m_bearerToken(bearerToken),
+    SecureService(bearerToken),
     m_stub(MissionService::NewStub(channel))
 {
 }
 
-void Registrator::setDroneUuid(const QString &uuid)
-{
-    m_droneUuid = uuid;
-}
-
-void Registrator::setFlightRequestUuid(const QString &uuid)
-{
-    m_flightRequestUuid = uuid;
-}
-
-std::optional<QString> Registrator::registerMission()
+std::optional<QString> Registrator::registerMission(const QString &droneUuid, const QString &flightRequestUuid)
 {
     grpc::ClientContext clientContext;
-    clientContext.AddMetadata("authorization", "Bearer " + m_bearerToken.toStdString());
+    clientContext.AddMetadata("authorization", "Bearer " + getBearerToken().toStdString());
     clientContext.set_deadline(gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_millis(3000, GPR_TIMESPAN)));
     MissionRequest request;
     MissionResponse response;
-    request.set_deviceuuid(m_droneUuid.toStdString());
-    request.set_flightrequestuuid(m_flightRequestUuid.toStdString());
+    request.set_deviceuuid(droneUuid.toStdString());
+    request.set_flightrequestuuid(flightRequestUuid.toStdString());
     auto waypoints = Vehicles::instance()->current()->f_mission->f_waypoints;
     if(!qgetenv("DIGINAVIS_DEBUG").isEmpty())
         std::cout << "WAYPOINTS" << std::endl;
@@ -102,7 +106,7 @@ std::optional<QString> Registrator::registerMission()
 void Registrator::updateMission(const QString &missionUuid)
 {
     grpc::ClientContext clientContext;
-    clientContext.AddMetadata("authorization", "Bearer " + m_bearerToken.toStdString());
+    clientContext.AddMetadata("authorization", "Bearer " + getBearerToken().toStdString());
     clientContext.set_deadline(gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_millis(3000, GPR_TIMESPAN)));
     MissionUpdateStatusAndCoordinatesRequest request;
     Empty response;
@@ -127,7 +131,7 @@ void Registrator::updateMission(const QString &missionUuid)
 bool Registrator::updateStatus(const QString &missionUuid, MissionStatus status)
 {
     grpc::ClientContext clientContext;
-    clientContext.AddMetadata("authorization", "Bearer " + m_bearerToken.toStdString());
+    clientContext.AddMetadata("authorization", "Bearer " + getBearerToken().toStdString());
     clientContext.set_deadline(gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_millis(3000, GPR_TIMESPAN)));
     MissionUpdateStatusRequest request;
     Empty response;
@@ -237,6 +241,18 @@ void AsyncClient::setStatus(Status status)
     }
 }
 
+std::unique_ptr<Tracker> AsyncClient::createTracker(std::shared_ptr<grpc::Channel> channel) const
+{
+    auto tracker = std::make_unique<Tracker>(channel, getBearerToken());
+    tracker->setMissionUuid(getMissionUuid());
+    return tracker;
+}
+
+std::unique_ptr<Registrator> AsyncClient::createRegistrator(std::shared_ptr<grpc::Channel> channel) const
+{
+    return std::make_unique<Registrator>(channel, getBearerToken());
+}
+
 void AsyncClient::registerMission()
 {
     std::unique_lock locker(m_ioMutex);
@@ -268,20 +284,23 @@ void AsyncClient::run()
             auto deadline = gpr_time_add(gpr_now(GPR_CLOCK_REALTIME), gpr_time_from_seconds(2, GPR_TIMESPAN));
             if(channel->WaitForConnected(deadline)) {
                 setIsConnected(true);
-                auto tracker = std::make_unique<Tracker>(channel, getBearerToken());
-                tracker->setMissionUuid(getMissionUuid());
-                auto registrator = std::make_unique<Registrator>(channel, getBearerToken());
+                auto tracker = createTracker(channel);
+                auto registrator = createRegistrator(channel);
 
                 while(!m_stop) {
+                    const auto bearerToken = getBearerToken();
+                    if(bearerToken != tracker->getBearerToken())
+                        tracker = createTracker(channel);
+                    if(bearerToken != registrator->getBearerToken())
+                        registrator = createRegistrator(channel);
+
                     auto task = getTask();
                     if(task) {
                         if(task.value() == RegisterMission) {
-                            registrator->setDroneUuid(getDroneUuid());
-                            registrator->setFlightRequestUuid(getFlightRequestUuid());
-                            auto result = registrator->registerMission();
+                            auto result = registrator->registerMission(getDroneUuid(), getFlightRequestUuid());
                             if(result) {
                                 setMissionUuid(result.value());
-                                tracker->setMissionUuid(getMissionUuid());
+                                tracker->setMissionUuid(result.value());
                                 setStatus(Registered);
                             }
                         } else if(task.value() == UpdateMission && !getMissionUuid().isEmpty()) {
@@ -312,10 +331,11 @@ void AsyncClient::run()
                             return v < ALTITUDE_THRESHOLD;
                         });
 
-                        if(getStatus() == Registered && greater) {
+                        const auto status = getStatus();
+                        if(status == Registered && greater) {
                             if(registrator->updateStatus(getMissionUuid(), IN_MOVE))
                                 setStatus(InMove);
-                        } else if(getStatus() == InMove && less) {
+                        } else if(status == InMove && less) {
                             if(registrator->updateStatus(getMissionUuid(), LANDED))
                                 setStatus(Landed);
                         }
