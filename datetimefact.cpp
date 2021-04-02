@@ -34,7 +34,7 @@ DateTimeFact::DateTimeFact(Fact *parent,
 QDateTime DateTimeFact::getDateTime() const
 {
     QDateTime result(QDate(f_year->value().toInt(), f_month->value().toInt(), f_day->value().toInt()),
-                     QTime(f_hour->value().toInt(), f_minutes->value().toInt()));
+                     QTime(f_hour->value().toInt(), f_minutes->value().toInt()), Qt::UTC);
     return result;
 }
 

@@ -89,12 +89,12 @@ void FlightRequestCreator::onCreateTriggered()
     flightplan["geometry"] = geometry1;
     flightplan["maxAltitudeAgl"] = maxAltitude;
     flightplan["zonalAreaCode"] = "A54618";
-    auto startDateTime = f_startDateTime->getDateTime();
-    auto endDateTime = f_endDateTime->getDateTime();
-    flightplan["scheduledDateTimeStart"] = startDateTime.toString("yyyy-MM-ddThh:mm:ss.zzzZ");
-    flightplan["scheduledDateTimeEnd"] = endDateTime.toString("yyyy-MM-ddThh:mm:ss.zzzZ");
-    flightplan["reserveDateTimeStart"] = startDateTime.toString("yyyy-MM-ddThh:mm:ss.zzzZ");
-    flightplan["reserveDateTimeEnd"] = endDateTime.toString("yyyy-MM-ddThh:mm:ss.zzzZ");
+    auto startDateTime = f_startDateTime->getDateTime().toSecsSinceEpoch();
+    auto endDateTime = f_endDateTime->getDateTime().toSecsSinceEpoch();
+    flightplan["scheduledDateTimeStart"] = startDateTime;
+    flightplan["scheduledDateTimeEnd"] = endDateTime;
+    flightplan["reserveDateTimeStart"] = startDateTime;
+    flightplan["reserveDateTimeEnd"] = endDateTime;
     flightplan["location"] = "Russia";
     flightplan["supervisorName"] = "Dispatcher";
     QJsonObject pilot;
